@@ -126,25 +126,11 @@ router.put("/:id", authenticateJWT, async (req: Request, res: Response) => {
       });
     }
 
-    const {
-      name,
-      ingredients,
-      instructions,
-      estimatedCalories,
-      public: isPublic,
-    } = req.body;
+    const { name, ingredients, instructions, estimatedCalories, public: isPublic } = req.body;
 
     const updatedRecipe = await Recipe.findByIdAndUpdate(
       id,
-      {
-        $set: {
-          name,
-          ingredients,
-          instructions,
-          estimatedCalories,
-          public: isPublic,
-        },
-      },
+      { $set: { name, ingredients, instructions, estimatedCalories, public: isPublic } },
       { new: true, runValidators: true }
     ).lean();
 
@@ -196,85 +182,71 @@ router.delete("/:id", authenticateJWT, async (req: Request, res: Response) => {
 });
 
 // Generate recipe using AI
-router.post(
-  "/generate",
-  authenticateJWT,
-  async (req: Request, res: Response) => {
-    try {
-      const { ingredients } = req.body;
+router.post("/generate", authenticateJWT, async (req: Request, res: Response) => {
+  try {
+    const { ingredients } = req.body;
 
-      if (
-        !ingredients ||
-        !Array.isArray(ingredients) ||
-        ingredients.length === 0
-      ) {
-        return res.status(400).json({
-          success: false,
-          message: "Please provide a non-empty array of ingredients",
-        });
-      }
-
-      const generatedRecipe = {
-        name: `${ingredients[0]} Special`,
-        ingredients: ingredients,
-        instructions: `This is a placeholder for AI-generated instructions using: ${ingredients.join(
-          ", "
-        )}`,
-        estimatedCalories: 500,
-        createdBy: "AI",
-        isGenerated: true,
-        public: false, // Default AI-generated recipes to private
-      };
-
-      return res.status(200).json({
-        success: true,
-        data: generatedRecipe,
-      });
-    } catch (error) {
-      console.error("Error generating recipe:", error);
-      return res.status(500).json({
+    if (!ingredients || !Array.isArray(ingredients) || ingredients.length === 0) {
+      return res.status(400).json({
         success: false,
-        message: "Server error while generating recipe",
+        message: "Please provide a non-empty array of ingredients",
       });
     }
+
+    const generatedRecipe = {
+      name: `${ingredients[0]} Special`,
+      ingredients: ingredients,
+      instructions: `This is a placeholder for AI-generated instructions using: ${ingredients.join(", ")}`,
+      estimatedCalories: 500,
+      createdBy: "AI",
+      isGenerated: true,
+      public: false, // Default AI-generated recipes to private
+    };
+
+    return res.status(200).json({
+      success: true,
+      data: generatedRecipe,
+    });
+  } catch (error) {
+    console.error("Error generating recipe:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error while generating recipe",
+    });
   }
-);
+});
 
 // Save generated recipe to user's collection
-router.post(
-  "/save-generated",
-  authenticateJWT,
-  async (req: Request, res: Response) => {
-    try {
-      const { name, ingredients, instructions, estimatedCalories } = req.body;
+router.post("/save-generated", authenticateJWT, async (req: Request, res: Response) => {
+  try {
+    const { name, ingredients, instructions, estimatedCalories } = req.body;
 
-      if (!name || !ingredients || !instructions) {
-        return res.status(400).json({
-          success: false,
-          message: "Name, ingredients, and instructions are required",
-        });
-      }
-
-      const newRecipe = new Recipe({
-        name,
-        ingredients,
-        instructions,
-        estimatedCalories,
-        createdBy: req.user?.id,
-        source: "AI Generated",
-        public: false, // Default to private
-      });
-
-      const savedRecipe = await newRecipe.save();
-      return res.status(201).json({ success: true, data: savedRecipe });
-    } catch (error) {
-      console.error("Error saving generated recipe:", error);
-      return res.status(500).json({
+    if (!name || !ingredients || !instructions) {
+      return res.status(400).json({
         success: false,
-        message: "Server error while saving generated recipe",
+        message: "Name, ingredients, and instructions are required",
       });
     }
+
+    const newRecipe = new Recipe({
+      name,
+      ingredients,
+      instructions,
+      estimatedCalories,
+      createdBy: req.user?.id,
+      source: "AI Generated",
+      public: false, // Default to private
+    });
+
+    const savedRecipe = await newRecipe.save();
+    return res.status(201).json({ success: true, data: savedRecipe });
+  } catch (error) {
+    console.error("Error saving generated recipe:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error while saving generated recipe",
+    });
   }
-);
+});
 
 export default router;
