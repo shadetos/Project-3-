@@ -1,27 +1,44 @@
+// tailwind.config.js
 module.exports = {
-    // Tells Tailwind where to look for class names
     content: [
-      "./src/**/*.{js,jsx,ts,tsx}", // Add more paths if needed
+      "./src/**/*.{js,jsx,ts,tsx}"
     ],
     theme: {
       extend: {
         colors: {
-          // Example custom colors:
-          primary: "#FF9800",
-          'primary-dark': "#BF6E00",
-          secondary: "#03A9F4",
+          primary: "#FB2C2C",        // Red
+          "orange-brand": "#EA910A", // Orange
+          "yellow-brand": "#FEE04A", // Yellow
+          "gray-light": "#F5F5F5",
+          "gray-dark": "#333333",
+        },
+        fontFamily: {
+          sans: ["Poppins", "sans-serif"],
         },
         spacing: {
-          // Example spacing tokens:
           sm: "0.5rem",
           md: "1rem",
           lg: "2rem",
-        },
-        fontFamily: {
-          // Example custom font family:
-          base: ["Roboto", "sans-serif"],
         },
       },
     },
     plugins: [],
   };
+  
+  /* Button samples */
+  /* 
+
+  Primary Button:
+  <button class="bg-primary hover:bg-red-600 text-white font-semibold py-sm px-md rounded">
+  Primary Action
+</button>
+
+    Secondary Button:
+    <button class="bg-orange-brand hover:bg-orange-600 text-white font-semibold py-sm px-md rounded">
+  Secondary Action
+</button>
+
+<button class="bg-yellow-brand hover:bg-yellow-400 text-gray-dark font-semibold py-sm px-md rounded">
+  Info
+</button>
+*/
