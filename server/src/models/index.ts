@@ -3,27 +3,28 @@ import Recipe from "./recipe";
 import User from "./user";
 
 const mongoURI =
-  process.env.MONGODB_URI || "mongodb://localhost:27017/recipeApp";
+  process.env.MONGODB_URI ?? "mongodb://localhost:27017/recipeApp";
 
-const connectDB = async (): Promise<void> => {
+const connectDB = async (retries = 5): Promise<void> => {
   try {
-    await mongoose.connect(mongoURI);
+    await mongoose.connect(mongoURI, {
+      serverSelectionTimeoutMS: 5000, // Timeout after 5s if no connection
+    });
     console.log("✅ MongoDB connected successfully");
   } catch (error) {
     console.error("❌ MongoDB connection error:", error);
-    setTimeout(connectDB, 5000); // Retry after 5 seconds
+
+    if (retries > 0) {
+      console.log(
+        `🔄 Retrying MongoDB connection... (${retries} attempts left)`
+      );
+      setTimeout(() => connectDB(retries - 1), 5000);
+    } else {
+      console.error("🚨 MongoDB connection failed after multiple attempts.");
+      process.exit(1);
+    }
   }
 };
-
-// Handle connection events
-mongoose.connection.on("disconnected", () => {
-  console.warn("⚠️ MongoDB disconnected. Reconnecting...");
-  connectDB();
-});
-
-mongoose.connection.on("reconnected", () => {
-  console.log("🔄 MongoDB reconnected.");
-});
 
 // Graceful shutdown handling
 process.on("SIGINT", async () => {

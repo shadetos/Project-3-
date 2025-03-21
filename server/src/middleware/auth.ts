@@ -37,7 +37,6 @@ export const authenticateJWT = (
   res: Response,
   next: NextFunction
 ): void => {
-  // Get token from header
   const authHeader = req.headers.authorization;
 
   if (!authHeader) {
@@ -48,9 +47,7 @@ export const authenticateJWT = (
     return;
   }
 
-  // Format should be "Bearer [token]"
   const token = authHeader.split(" ")[1];
-
   if (!token) {
     res.status(401).json({
       success: false,
@@ -60,17 +57,12 @@ export const authenticateJWT = (
   }
 
   try {
-    // Verify token
     const decoded = jwt.verify(token, JWT_SECRET) as {
       id: string;
       username: string;
       email: string;
     };
-
-    // Add user data to request
     req.user = decoded;
-
-    // Proceed to the next middleware/route handler
     next();
   } catch (error) {
     res.status(401).json({
@@ -80,74 +72,49 @@ export const authenticateJWT = (
   }
 };
 
-// Optional middleware to check if user exists in database
+// Helper function to fetch user
+const findUserById = async (userId: string) => {
+  if (!userId) return null;
+  return await User.findById(userId).lean();
+};
+
+// Middleware to validate authenticated user
 export const validateUser = async (
   req: Request,
   res: Response,
   next: NextFunction
-): Promise<void> => {
+): Promise<Response | void> => {
   try {
-    if (!req.user?.id) {
-      res.status(401).json({
-        success: false,
-        message: "User not authenticated",
-      });
-      return;
-    }
-
-    // Check if user exists in database
-    const user = await User.findById(req.user.id);
-
+    const user = await findUserById(req.user?.id ?? "");
     if (!user) {
-      res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-      return;
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
-
     next();
   } catch (error) {
-    console.error("Error validating user:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error while validating user",
-    });
+    console.error("User validation error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
-// Middleware for admin-only routes
+// Middleware to enforce admin privileges
 export const requireAdmin = async (
   req: Request,
   res: Response,
   next: NextFunction
-): Promise<void> => {
+): Promise<Response | void> => {
   try {
-    if (!req.user?.id) {
-      res.status(401).json({
-        success: false,
-        message: "User not authenticated",
-      });
-      return;
-    }
-
-    // Check if user is admin
-    const user = await User.findById(req.user.id);
-
+    const user = await findUserById(req.user?.id ?? "");
     if (!user || user.role !== "admin") {
-      res.status(403).json({
+      return res.status(403).json({
         success: false,
         message: "Access denied. Admin privileges required.",
       });
-      return;
     }
-
     next();
   } catch (error) {
-    console.error("Error checking admin status:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error while checking admin status",
-    });
+    console.error("Admin privilege check error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
