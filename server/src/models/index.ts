@@ -33,12 +33,3 @@ process.on("SIGINT", async () => {
 });
 
 export { connectDB, Recipe, User };
-
-/*
-Question 1: Is this file correct? (Ask about line 6 localhost)
-Question 2: process, on is red underlined? Focus on other red underlined code from other files.
-Question 3: What does requirements.txt file do in a Python project?
-Question 4: is tsconfig.json file correct? why red underline in beginning?
-Question 5: Quick oveview of MongoDB Atlas and mongoose
-Question 6: Can I add .gitignore for each frontend and backend folders?
-*/

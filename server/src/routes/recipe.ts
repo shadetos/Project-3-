@@ -1,4 +1,5 @@
 import express, { Request, Response } from "express";
+import "../types/express"; // Import the extended Request type
 import { Recipe } from "../models";
 import { authenticateJWT } from "../middleware/auth";
 import mongoose from "mongoose";
@@ -6,7 +7,7 @@ import mongoose from "mongoose";
 const router = express.Router();
 
 // Get all recipes (public recipes or user's saved recipes)
-router.get("/", authenticateJWT, async (req: Request, res: Response) => {
+router.get("/", authenticateJWT, async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = String(req.user?.id);
 
@@ -17,10 +18,10 @@ router.get("/", authenticateJWT, async (req: Request, res: Response) => {
       .sort({ createdAt: -1 })
       .lean();
 
-    return res.status(200).json({ success: true, data: recipes });
+    res.status(200).json({ success: true, data: recipes });
   } catch (error) {
     console.error("Error fetching recipes:", error);
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
       message: "Server error while fetching recipes",
     });
@@ -28,38 +29,41 @@ router.get("/", authenticateJWT, async (req: Request, res: Response) => {
 });
 
 // Get a single recipe by ID
-router.get("/:id", authenticateJWT, async (req: Request, res: Response) => {
+router.get("/:id", authenticateJWT, async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         message: "Invalid recipe ID format",
       });
+      return;
     }
 
     const recipe = await Recipe.findById(id).lean();
 
     if (!recipe) {
-      return res.status(404).json({
+      res.status(404).json({
         success: false,
         message: "Recipe not found",
       });
+      return;
     }
 
     const userId = String(req.user?.id);
     if (String(recipe.createdBy) !== userId && !recipe.public) {
-      return res.status(403).json({
+      res.status(403).json({
         success: false,
         message: "Access denied to this recipe",
       });
+      return;
     }
 
-    return res.status(200).json({ success: true, data: recipe });
+    res.status(200).json({ success: true, data: recipe });
   } catch (error) {
     console.error("Error fetching recipe:", error);
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
       message: "Server error while fetching recipe",
     });
@@ -67,7 +71,7 @@ router.get("/:id", authenticateJWT, async (req: Request, res: Response) => {
 });
 
 // Create a new recipe
-router.post("/", authenticateJWT, async (req: Request, res: Response) => {
+router.post("/", authenticateJWT, async (req: Request, res: Response): Promise<void> => {
   try {
     const {
       name,
@@ -78,10 +82,11 @@ router.post("/", authenticateJWT, async (req: Request, res: Response) => {
     } = req.body;
 
     if (!name || !ingredients || !instructions) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         message: "Name, ingredients, and instructions are required",
       });
+      return;
     }
 
     const newRecipe = new Recipe({
@@ -94,10 +99,10 @@ router.post("/", authenticateJWT, async (req: Request, res: Response) => {
     });
 
     const savedRecipe = await newRecipe.save();
-    return res.status(201).json({ success: true, data: savedRecipe });
+    res.status(201).json({ success: true, data: savedRecipe });
   } catch (error) {
     console.error("Error creating recipe:", error);
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
       message: "Server error while creating recipe",
     });
@@ -105,7 +110,7 @@ router.post("/", authenticateJWT, async (req: Request, res: Response) => {
 });
 
 // Update a recipe
-router.put("/:id", authenticateJWT, async (req: Request, res: Response) => {
+router.put("/:id", authenticateJWT, async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     const userId = String(req.user?.id);
@@ -113,31 +118,46 @@ router.put("/:id", authenticateJWT, async (req: Request, res: Response) => {
     const recipe = await Recipe.findById(id);
 
     if (!recipe) {
-      return res.status(404).json({
+      res.status(404).json({
         success: false,
         message: "Recipe not found",
       });
+      return;
     }
 
     if (String(recipe.createdBy) !== userId) {
-      return res.status(403).json({
+      res.status(403).json({
         success: false,
         message: "You can only update your own recipes",
       });
     }
 
-    const { name, ingredients, instructions, estimatedCalories, public: isPublic } = req.body;
+    const {
+      name,
+      ingredients,
+      instructions,
+      estimatedCalories,
+      public: isPublic,
+    } = req.body;
 
     const updatedRecipe = await Recipe.findByIdAndUpdate(
       id,
-      { $set: { name, ingredients, instructions, estimatedCalories, public: isPublic } },
+      {
+        $set: {
+          name,
+          ingredients,
+          instructions,
+          estimatedCalories,
+          public: isPublic,
+        },
+      },
       { new: true, runValidators: true }
     ).lean();
 
-    return res.status(200).json({ success: true, data: updatedRecipe });
+    res.status(200).json({ success: true, data: updatedRecipe });
   } catch (error) {
     console.error("Error updating recipe:", error);
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
       message: "Server error while updating recipe",
     });
@@ -145,7 +165,7 @@ router.put("/:id", authenticateJWT, async (req: Request, res: Response) => {
 });
 
 // Delete a recipe
-router.delete("/:id", authenticateJWT, async (req: Request, res: Response) => {
+router.delete("/:id", authenticateJWT, async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     const userId = String(req.user?.id);
@@ -153,28 +173,30 @@ router.delete("/:id", authenticateJWT, async (req: Request, res: Response) => {
     const recipe = await Recipe.findById(id);
 
     if (!recipe) {
-      return res.status(404).json({
+      res.status(404).json({
         success: false,
         message: "Recipe not found",
       });
+      return;
     }
 
     if (String(recipe.createdBy) !== userId) {
-      return res.status(403).json({
+      res.status(403).json({
         success: false,
         message: "You can only delete your own recipes",
       });
+      return;
     }
 
     await Recipe.findByIdAndDelete(id);
 
-    return res.status(200).json({
+    res.status(200).json({
       success: true,
       message: "Recipe deleted successfully",
     });
   } catch (error) {
     console.error("Error deleting recipe:", error);
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
       message: "Server error while deleting recipe",
     });
@@ -182,71 +204,87 @@ router.delete("/:id", authenticateJWT, async (req: Request, res: Response) => {
 });
 
 // Generate recipe using AI
-router.post("/generate", authenticateJWT, async (req: Request, res: Response) => {
-  try {
-    const { ingredients } = req.body;
+router.post(
+  "/generate",
+  authenticateJWT,
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { ingredients } = req.body;
 
-    if (!ingredients || !Array.isArray(ingredients) || ingredients.length === 0) {
-      return res.status(400).json({
+      if (
+        !ingredients ||
+        !Array.isArray(ingredients) ||
+        ingredients.length === 0
+      ) {
+        res.status(400).json({
+          success: false,
+          message: "Please provide a non-empty array of ingredients",
+        });
+        return;
+      }
+
+      const generatedRecipe = {
+        name: `${ingredients[0]} Special`,
+        ingredients: ingredients,
+        instructions: `This is a placeholder for AI-generated instructions using: ${ingredients.join(
+          ", "
+        )}`,
+        estimatedCalories: 500,
+        createdBy: "AI",
+        isGenerated: true,
+        public: false, // Default AI-generated recipes to private
+      };
+
+      res.status(200).json({
+        success: true,
+        data: generatedRecipe,
+      });
+    } catch (error) {
+      console.error("Error generating recipe:", error);
+      res.status(500).json({
         success: false,
-        message: "Please provide a non-empty array of ingredients",
+        message: "Server error while generating recipe",
       });
     }
-
-    const generatedRecipe = {
-      name: `${ingredients[0]} Special`,
-      ingredients: ingredients,
-      instructions: `This is a placeholder for AI-generated instructions using: ${ingredients.join(", ")}`,
-      estimatedCalories: 500,
-      createdBy: "AI",
-      isGenerated: true,
-      public: false, // Default AI-generated recipes to private
-    };
-
-    return res.status(200).json({
-      success: true,
-      data: generatedRecipe,
-    });
-  } catch (error) {
-    console.error("Error generating recipe:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Server error while generating recipe",
-    });
   }
-});
+);
 
 // Save generated recipe to user's collection
-router.post("/save-generated", authenticateJWT, async (req: Request, res: Response) => {
-  try {
-    const { name, ingredients, instructions, estimatedCalories } = req.body;
+router.post(
+  "/save-generated",
+  authenticateJWT,
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { name, ingredients, instructions, estimatedCalories } = req.body;
 
-    if (!name || !ingredients || !instructions) {
-      return res.status(400).json({
+      if (!name || !ingredients || !instructions) {
+        res.status(400).json({
+          success: false,
+          message: "Name, ingredients, and instructions are required",
+        });
+        return;
+      }
+
+      const newRecipe = new Recipe({
+        name,
+        ingredients,
+        instructions,
+        estimatedCalories,
+        createdBy: req.user?.id,
+        source: "AI Generated",
+        public: false, // Default to private
+      });
+
+      const savedRecipe = await newRecipe.save();
+      res.status(201).json({ success: true, data: savedRecipe });
+    } catch (error) {
+      console.error("Error saving generated recipe:", error);
+      res.status(500).json({
         success: false,
-        message: "Name, ingredients, and instructions are required",
+        message: "Server error while saving generated recipe",
       });
     }
-
-    const newRecipe = new Recipe({
-      name,
-      ingredients,
-      instructions,
-      estimatedCalories,
-      createdBy: req.user?.id,
-      source: "AI Generated",
-      public: false, // Default to private
-    });
-
-    const savedRecipe = await newRecipe.save();
-    return res.status(201).json({ success: true, data: savedRecipe });
-  } catch (error) {
-    console.error("Error saving generated recipe:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Server error while saving generated recipe",
-    });
   }
-});
+);
 
 export default router;

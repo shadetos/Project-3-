@@ -13,6 +13,7 @@ export interface IUser extends Document {
   passwordHash: string;
   savedRecipes: mongoose.Types.ObjectId[] | IRecipe[];
   calorieLog: CalorieLogEntry[];
+  role: string;
 }
 
 const CalorieLogSchema = new Schema<CalorieLogEntry>({
@@ -27,6 +28,7 @@ const UserSchema: Schema = new Schema<IUser>({
   passwordHash: { type: String, required: true },
   savedRecipes: [{ type: Schema.Types.ObjectId, ref: "Recipe" }],
   calorieLog: [CalorieLogSchema],
+  role: { type: String, default: "user" },
 });
 
 export default mongoose.model<IUser>("User", UserSchema);

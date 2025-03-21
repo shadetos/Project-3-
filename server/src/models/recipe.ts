@@ -7,6 +7,7 @@ export interface IRecipe extends Document {
   estimatedCalories: number;
   createdBy: mongoose.Types.ObjectId | string;
   createdAt: Date;
+  public: boolean;
 }
 
 const RecipeSchema: Schema = new Schema<IRecipe>({
@@ -16,6 +17,7 @@ const RecipeSchema: Schema = new Schema<IRecipe>({
   estimatedCalories: { type: Number, required: true }, // Ensure every recipe has a calorie estimate
   createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
   createdAt: { type: Date, default: Date.now },
+  public: { type: Boolean, default: false },
 });
 
 // Indexing for performance
@@ -24,4 +26,4 @@ RecipeSchema.index({ name: "text", ingredients: "text" }); // Enables text searc
 
 export default mongoose.model<IRecipe>("Recipe", RecipeSchema);
 
-// Is this file correct?
+
