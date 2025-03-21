@@ -8,6 +8,7 @@ import Home from './pages/Home';
 import CreateRecipes from './pages/CreateRecipes';
 import SavedRecipies from './pages/SavedRecipies';
 import Dashboard from './pages/Dashboard';
+import './styles/index.css';
 
 function App() {
   return (

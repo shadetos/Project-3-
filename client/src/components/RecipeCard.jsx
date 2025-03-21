@@ -26,79 +26,53 @@ export default SomeRecipePage;
 */
 
 function RecipeCard({ recipe }) {
-  const {
-    name,
-    image,
-    ingredients = [],
-    instructions,
-  } = recipe;
-
-  return (
-    <div style={styles.card}>
-      {image && (
-        <img
-          src={image}
-          alt={name}
-          style={styles.image}
-        />
-      )}
-      <div style={styles.content}>
-        <h2 style={styles.title}>{name}</h2>
-        <p style={styles.sectionTitle}>Ingredients:</p>
-        <ul>
-          {ingredients.map((item, idx) => (
-            <li key={idx}>{item}</li>
-          ))}
-        </ul>
-        {instructions && (
-          <>
-            <p style={styles.sectionTitle}>Instructions:</p>
-            <p>{instructions}</p>
-          </>
+    const {
+      name,
+      image,
+      ingredients = [],
+      instructions,
+    } = recipe;
+  
+    return (
+      <div className="border border-gray-300 rounded-md m-md max-w-sm shadow-sm overflow-hidden">
+        {/* IMAGE (optional) */}
+        {image && (
+          <img
+            src={image}
+            alt={name}
+            className="w-full object-cover"
+          />
         )}
-        <button style={styles.button}>Save Recipe</button>
+  
+        <div className="p-md">
+          {/* RECIPE NAME */}
+          <h2 className="text-xl font-bold text-primary mt-0 mb-sm">
+            {name}
+          </h2>
+  
+          {/* INGREDIENTS */}
+          <p className="font-semibold mt-md mb-sm text-orange-brand">Ingredients:</p>
+          <ul className="list-disc list-inside pl-md text-gray-dark">
+            {ingredients.map((item, idx) => (
+              <li key={idx}>{item}</li>
+            ))}
+          </ul>
+  
+          {/* INSTRUCTIONS */}
+          {instructions && (
+            <>
+              <p className="font-semibold mt-md mb-sm text-orange-brand">Instructions:</p>
+              <p className="text-gray-dark">{instructions}</p>
+            </>
+          )}
+  
+          {/* SAVE RECIPE BUTTON */}
+          <button className="mt-md px-md py-sm rounded bg-primary text-white hover:bg-red-600 font-semibold">
+            Save Recipe
+          </button>
+        </div>
       </div>
-    </div>
-  );
-}
-
-// Basic inline styles (Subject to Change)
-const styles = {
-  card: {
-    border: '1px solid #ccc',
-    borderRadius: '6px',
-    margin: '1rem',
-    maxWidth: '400px',
-    overflow: 'hidden',
-    boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
-  },
-  image: {
-    width: '100%',
-    objectFit: 'cover',
-  },
-  content: {
-    padding: '1rem',
-  },
-  title: {
-    marginTop: 0,
-    marginBottom: '0.5rem',
-    fontSize: '1.25rem',
-    fontWeight: 'bold',
-  },
-  sectionTitle: {
-    marginBottom: '0.25rem',
-    fontWeight: 'bold',
-    marginTop: '0.75rem',
-  },
-  button: {
-    marginTop: '1rem',
-    padding: '0.5rem 1rem',
-    border: 'none',
-    borderRadius: '4px',
-    backgroundColor: '#ff9800',
-    color: '#fff',
-    cursor: 'pointer',
-  },
-};
-
-export default RecipeCard;
+    );
+  }
+  
+  export default RecipeCard;
