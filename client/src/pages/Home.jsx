@@ -1,8 +1,5 @@
 // TODO: Main home page that welcomes users, suggests recipes, or shows highlights.
 import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-
 export default function HomePage() {
   const [recipes] = useState([
     { name: "Spaghetti Carbonara", description: "A classic Italian pasta dish with eggs, cheese, pancetta, and pepper." },
