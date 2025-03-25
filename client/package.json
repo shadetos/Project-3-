@@ -1,27 +1,23 @@
 {
-    "name": "project-3-main",
+    "name": "project-3-main-client",
     "version": "1.0.0",
     "private": true,
     "scripts": {
-        "start": "react-scripts start",
-        "build": "react-scripts build",
         "dev": "vite",
-        "vite-build": "vite build",
+        "build": "vite build",
         "preview": "vite preview"
     },
     "dependencies": {
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
-        "react-router-dom": "^7.4.0",
-        "react-scripts": "^5.0.1"
+        "react-router-dom": "^6.14.0"
     },
     "devDependencies": {
-        "@tailwindcss/postcss": "^4.0.15",
         "@vitejs/plugin-react": "^4.3.4",
         "autoprefixer": "^10.4.21",
         "postcss": "^8.5.3",
-        "tailwindcss": "^4.0.15",
-        "vite": "^6.2.3"
+        "tailwindcss": "^3.4.17",
+        "vite": "^4.3.9"
     },
     "main": "index.js",
     "keywords": [],
