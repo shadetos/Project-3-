@@ -2,7 +2,6 @@
 import React from 'react';
 
 /* Example usage of RecipeCard component
-
 import React from 'react';
 import RecipeCard from '../components/RecipeCard';
 
@@ -13,7 +12,6 @@ function SomeRecipePage() {
     ingredients: ['Pasta', 'Tomato Sauce', 'Ground Beef', 'Onions', 'Garlic'],
     instructions: 'Cook pasta, brown beef with onions, add sauce. Combine.',
   };
-
   return (
     <div>
       <h1>My Recipes</h1>
@@ -21,7 +19,6 @@ function SomeRecipePage() {
     </div>
   );
 }
-
 export default SomeRecipePage;
 */
 
