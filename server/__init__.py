@@ -33,7 +33,7 @@ def create_app():
     CORS(app)
 
     # Register blueprints (routes)
-    from server.routes.recipe_routes import recipe_bp
+    from server.src.routes.recipe import recipe_bp
     from server.routes.user_routes import user_bp
 
     app.register_blueprint(recipe_bp, url_prefix="/api/recipes")
