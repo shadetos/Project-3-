@@ -1,24 +1,27 @@
 {
   "name": "project-3-main",
   "version": "1.0.0",
-  "description": "Recipe Generator App - MERN Stack Project",
+  "description": "Recipe Generator App - Python/Flask Backend with React Frontend",
   "scripts": {
-    "start": "cd server && npm run start",
-    "seed": "cd server && npm run seed",
-    "develop": "concurrently \"cd server && npm run watch\" \"cd client && npm run dev\"",
-    "install": "cd server && npm i && cd ../client && npm i",
+    "start": "cd server && python app.py",
+    "start-dev": "cd server && python run.py",
+    "seed": "cd server && python seeds/seed.py",
+    "seed-clear": "cd server && python seeds/seed.py --clear",
+    "client": "cd client && npm run dev",
+    "develop": "concurrently \"cd server && python run.py --web-only\" \"cd client && npm run dev\"",
+    "install-client": "cd client && npm i",
     "build": "cd client && npm run build",
-    "render-build": "npm install && npm run build",
+    "render-build": "npm run install-client && npm run build",
     "test": "npx cypress run --browser electron",
     "test-component": "npx cypress run --component",
     "test-gui": "npx cypress open"
   },
   "keywords": [
     "recipe",
-    "mern",
+    "python",
+    "flask",
     "react",
-    "mongodb",
-    "node"
+    "mongodb"
   ],
   "author": "",
   "license": "ISC",
