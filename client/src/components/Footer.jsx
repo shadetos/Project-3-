@@ -1,55 +1,51 @@
-// TODO: This global footer appears on every page and may include links or social media icons.
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React from "react";
+import { Link } from "react-router-dom";
 
 function Footer() {
+  const currentYear = new Date().getFullYear();
+
   return (
-    <footer style={styles.footer}>
-      <div style={styles.info}>
-        <p style={styles.text}>2025 Recipe Generator App</p>
-        <p style={styles.text}>All rights reserved</p>
-      </div>
-      <div style={styles.links}>
-        <Link to="/about" style={styles.link}>
-          About
-        </Link>
-        <Link to="/contact" style={styles.link}>
-          Contact
-        </Link>
-        {/* Add more footer links here if needed */}
+    <footer className="mt-auto py-4 bg-gray-100 border-t border-gray-200">
+      <div className="container mx-auto px-4">
+        <div className="flex flex-col md:flex-row justify-between items-center">
+          <div className="mb-4 md:mb-0">
+            <p className="text-gray-700 text-sm">
+              © {currentYear} Recipe Generator App. All rights reserved.
+            </p>
+          </div>
+
+          <nav aria-label="Footer Navigation">
+            <ul className="flex space-x-6">
+              <li>
+                <Link
+                  to="/about"
+                  className="text-gray-700 hover:text-gray-900 text-sm font-medium transition-colors"
+                >
+                  About
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/contact"
+                  className="text-gray-700 hover:text-gray-900 text-sm font-medium transition-colors"
+                >
+                  Contact
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/privacy"
+                  className="text-gray-700 hover:text-gray-900 text-sm font-medium transition-colors"
+                >
+                  Privacy Policy
+                </Link>
+              </li>
+            </ul>
+          </nav>
+        </div>
       </div>
     </footer>
   );
 }
-
-const styles = {
-  footer: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '0.75rem 1rem',
-    backgroundColor: '#eee',
-    borderTop: '1px solid #ccc',
-    marginTop: 'auto',
-  },
-  info: {
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  text: {
-    margin: 0,
-    color: '#333',
-    fontSize: '0.9rem',
-  },
-  links: {
-    display: 'flex',
-    gap: '1rem',
-  },
-  link: {
-    textDecoration: 'none',
-    color: '#333',
-    fontWeight: '500',
-  },
-};
 
 export default Footer;
