@@ -1,20 +1,24 @@
 {
-  "name": "project-3-main",
+  "name": "recipe-generator-app",
   "version": "1.0.0",
   "description": "Recipe Generator App - Python/Flask Backend with React Frontend",
+  "private": true,
   "scripts": {
-    "start": "cd server && python app.py",
-    "start-dev": "cd server && python run.py",
-    "seed": "cd server && cd src && python seeds/seed.py",
-    "seed-clear": "cd server && cd src && python seeds/seed.py --clear",
-    "client": "cd client && npm run dev",
-    "develop": "concurrently \"cd server && python run.py --web-only\" \"cd client && npm run dev\"",
-    "install-client": "cd client && npm i",
+    "start": "npm run start:server",
+    "start:server": "cd server && npm run start",
+    "start:client": "cd client && npm run dev",
+    "start:dev": "concurrently \"npm run start:server:web\" \"npm run start:client\"",
+    "start:server:web": "cd server && npm run start:web-only",
+    "seed": "cd server && npm run seed",
+    "seed:clear": "cd server && npm run seed:clear",
+    "install:all": "npm run install:client && npm run install:server",
+    "install:client": "cd client && npm install",
+    "install:server": "cd server && npm run install-deps",
     "build": "cd client && npm run build",
-    "render-build": "npm run install-client && npm run build",
+    "render-build": "npm run install:client && npm run build",
     "test": "npx cypress run --browser electron",
-    "test-component": "npx cypress run --component",
-    "test-gui": "npx cypress open"
+    "test:component": "npx cypress run --component",
+    "test:gui": "npx cypress open"
   },
   "keywords": [
     "recipe",
@@ -28,10 +32,6 @@
   "devDependencies": {
     "concurrently": "^8.2.0",
     "cypress": "^13.13.0",
-    "cypress-ctrf-json-reporter": "^0.0.11",
-    "ts-node": "^10.9.2"
-  },
-  "dependencies": {
-    "github-actions-ctrf": "^0.0.47"
+    "cypress-ctrf-json-reporter": "^0.0.11"
   }
 }
