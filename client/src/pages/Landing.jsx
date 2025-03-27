@@ -16,3 +16,5 @@ return (
     </div>
 )
 };
+
+export default Landing;
