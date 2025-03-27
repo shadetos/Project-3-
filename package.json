@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "description": "Recipe Generator App - Python/Flask Backend with React Frontend",
   "scripts": {
-    "start": "cd server && python run.py",
+    "start": "cd server && python app.py",
     "start-dev": "cd server && python run.py",
-    "seed": "cd server && python seeds/seed.py",
-    "seed-clear": "cd server && python seeds/seed.py --clear",
+    "seed": "cd server && cd src && python seeds/seed.py",
+    "seed-clear": "cd server && cd src && python seeds/seed.py --clear",
     "client": "cd client && npm run dev",
     "develop": "concurrently \"cd server && python run.py --web-only\" \"cd client && npm run dev\"",
     "install-client": "cd client && npm i",
