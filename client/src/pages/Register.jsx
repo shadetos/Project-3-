@@ -222,12 +222,10 @@ const Register = () => {
                     required
                     value={formData.username}
                     onChange={handleChange}
-                    className={`appearance-none block w-full px-3 py-2 border ${
-                      errors.username ? "border-red-300" : "border-gray-300"
-                    } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
+                    className="form-input"
                   />
                   {errors.username && (
-                    <p className="mt-2 text-sm text-red-600">
+                    <p className="text-red-600 text-sm">
                       {errors.username}
                     </p>
                   )}
@@ -250,12 +248,10 @@ const Register = () => {
                     required
                     value={formData.email}
                     onChange={handleChange}
-                    className={`appearance-none block w-full px-3 py-2 border ${
-                      errors.email ? "border-red-300" : "border-gray-300"
-                    } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
+                    className="form-input"
                   />
                   {errors.email && (
-                    <p className="mt-2 text-sm text-red-600">{errors.email}</p>
+                    <p className="text-red-600 text-sm">{errors.email}</p>
                   )}
                 </div>
               </div>
@@ -276,12 +272,10 @@ const Register = () => {
                     required
                     value={formData.password}
                     onChange={handleChange}
-                    className={`appearance-none block w-full px-3 py-2 border ${
-                      errors.password ? "border-red-300" : "border-gray-300"
-                    } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
+                    className="form-input"
                   />
                   {errors.password && (
-                    <p className="mt-2 text-sm text-red-600">
+                    <p className="text-red-600 text-sm">
                       {errors.password}
                     </p>
                   )}

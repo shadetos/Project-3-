@@ -64,11 +64,11 @@ body {
   transition: background-color 0.3s;
 }
 .saved-recipies-container button:hover {
-  background-color: #b33c0f;
+  background-color: #744d3f;
 }
 /* Example styles for a button */
 .btn {
-  background-color: #d45113;
+  background-color: #3a322f;
   color: #fff;
   padding: 10px 20px;
   border-radius: 5px;
