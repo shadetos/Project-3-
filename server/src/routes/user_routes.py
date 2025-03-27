@@ -294,3 +294,5 @@ def get_calorie_log():
 
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
+
+/* Make a route that serves the website in production mode, render it only runs api server
