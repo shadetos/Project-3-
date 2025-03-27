@@ -1,32 +1,37 @@
 {
- "name": "project-3-main",
+  "name": "project-3-main",
   "version": "1.0.0",
-  "description": "",
+  "description": "Recipe Generator App - Python/Flask Backend with React Frontend",
   "scripts": {
-    "start": "cd server && npm run start",
-    "seed": "cd server && npm run seed",
-    "develop": "concurrently \"cd server && npm run watch\" \"cd client && npm run dev\"",
-    "install": "cd server && npm i && cd ../client && npm i",
-    "build": "concurrently \"cd server && npm run build\" \"cd client && npm run build\"",
-    "render-build": "npm install && npm run build",
+    "start": "cd server && python app.py",
+    "start-dev": "cd server && python run.py",
+    "seed": "cd server && cd src && python seeds/seed.py",
+    "seed-clear": "cd server && cd src && python seeds/seed.py --clear",
+    "client": "cd client && npm run dev",
+    "develop": "concurrently \"cd server && python run.py --web-only\" \"cd client && npm run dev\"",
+    "install-client": "cd client && npm i",
+    "build": "cd client && npm run build",
+    "render-build": "npm run install-client && npm run build",
     "test": "npx cypress run --browser electron",
     "test-component": "npx cypress run --component",
     "test-gui": "npx cypress open"
   },
-  "keywords": [],
+  "keywords": [
+    "recipe",
+    "python",
+    "flask",
+    "react",
+    "mongodb"
+  ],
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "concurrently": "^8.2.0",
     "cypress": "^13.13.0",
     "cypress-ctrf-json-reporter": "^0.0.11",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
     "ts-node": "^10.9.2"
   },
   "dependencies": {
-    "@vitejs/plugin-react": "^4.3.1",
-    "github-actions-ctrf": "^0.0.47",
-    "vitest": "^2.0.3"
+    "github-actions-ctrf": "^0.0.47"
   }
 }
