@@ -15,6 +15,7 @@ Usage:
 
 import os
 import sys
+from flask import Flask
 import json
 import random
 from datetime import datetime, timedelta
@@ -26,12 +27,11 @@ import argparse
 # Load environment variables
 load_dotenv()
 
+app = Flask(__name__)
+app.config["MONGODB_URI"] = os.getenv("MONGODB_URI")
 # MongoDB connection
-MONGODB_URI = os.getenv("MONGODB_URI")
-print(f"Connected to MongoDB: {MONGODB_URI}")
-client = MongoClient(MONGODB_URI)
+client = MongoClient(app.config["MONGODB_URI"])
 db = client.get_database("recipe_db")
-
 
 # Collections
 users_collection = db.users
@@ -287,7 +287,7 @@ def main():
     # Connect to MongoDB
     try:
         client.admin.command("ping")
-        print(f"Connected to MongoDB: {MONGODB_URI}")
+        print(f"Connected to MongoDB: {app.config['MONGODB_URI']}")
     except Exception as e:
         print(f"Error connecting to MongoDB: {e}")
         sys.exit(1)

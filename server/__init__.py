@@ -3,6 +3,9 @@ Flask application factory module
 """
 
 from flask import Flask
+from routes.recipe_routes import recipe_bp
+from routes.user_routes import user_bp
+from routes.auth_routes import auth_bp
 from flask_pymongo import PyMongo
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
@@ -47,9 +50,6 @@ def create_app():
     # Register blueprints (routes)
     with app.app_context():
         # Import blueprints inside app context to avoid circular imports
-        from routes.recipe_routes import recipe_bp
-        from routes.user_routes import user_bp
-        from routes.auth_routes import auth_bp
 
         app.register_blueprint(recipe_bp, url_prefix="/api/recipes")
         app.register_blueprint(user_bp, url_prefix="/api/users")
