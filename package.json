@@ -5,10 +5,9 @@
   "private": true,
   "scripts": {
     "start": "npm run start:server",
-    "start:server": "cd server && npm run start",
+    "start:server": "cd server && python run.py",
     "start:client": "cd client && npm run dev",
-    "start:dev": "concurrently \"npm run start:server:web\" \"npm run start:client\"",
-    "start:server:web": "cd server && npm run start:web-only",
+    "start:dev": "concurrently \"npm run start:server\" \"npm run start:client\"",
     "seed": "cd server && npm run seed",
     "seed:clear": "cd server && npm run seed:clear",
     "install:all": "npm run install:client && npm run install:server",
