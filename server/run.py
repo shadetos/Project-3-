@@ -21,17 +21,17 @@ load_dotenv()
 is_flask_reload = os.environ.get("WERKZEUG_RUN_MAIN") == "true"
 
 # Import recipe generation functionality
+# try:
+#     from api import make_recipe
+# except ImportError:
 try:
-    from api import make_recipe
+    from recipe_api import make_recipe
 except ImportError:
-    try:
-        from recipe_api import make_recipe
-    except ImportError:
 
-        def make_recipe():
-            print(
-                "Recipe API module not found. Please ensure 'api.py' or 'recipe_api.py' exists."
-            )
+    def make_recipe():
+        print(
+            "Recipe API module not found. Please ensure 'api.py' or 'recipe_api.py' exists."
+        )
 
 
 def run_recipe_generator():

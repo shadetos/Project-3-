@@ -9,9 +9,9 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import HomePage from "./pages/HomePage";
+import Home from "./pages/Home";
 import SavedRecipes from "./pages/SavedRecipes";
-import RecipeForm from "./pages/RecipeForm";
+// import RecipeForm from "./pages/RecipeForm";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 
@@ -41,7 +41,7 @@ const App = () => {
                   <main className="flex-grow">
                     <Routes>
                       {/* Public routes */}
-                      <Route path="/" element={<HomePage />} />
+                      <Route path="/" element={<Home />} />
 
                       {/* Protected routes */}
                       <Route
@@ -52,14 +52,14 @@ const App = () => {
                           </ProtectedRoute>
                         }
                       />
-                      <Route
+                      {/* <Route
                         path="/create-recipes"
                         element={
                           <ProtectedRoute>
                             <RecipeForm />
                           </ProtectedRoute>
                         }
-                      />
+                      /> */}
                       <Route
                         path="/dashboard"
                         element={
