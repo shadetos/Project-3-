@@ -12,7 +12,7 @@
     "seed:clear": "cd server && npm run seed:clear",
     "install:all": "npm run install:client && npm run install:server",
     "install:client": "cd client && npm install",
-    "install:server": "cd server && npm run install-deps",
+    "install:server": "cd server && npm run prepare-server",
     "build": "cd client && npm run build",
     "render-build": "npm run install:client && npm run build",
     "test": "npx cypress run --browser electron",
@@ -29,7 +29,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "concurrently": "^8.2.0",
+    "concurrently": "^8.2.2",
     "cypress": "^13.13.0",
     "cypress-ctrf-json-reporter": "^0.0.11"
   }
