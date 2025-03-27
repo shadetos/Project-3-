@@ -202,7 +202,7 @@ def login_user():
 # Run the application
 if __name__ == "__main__":
     host = os.getenv("HOST", "0.0.0.0")
-    port = int(os.getenv("PORT", 3000))
+    port = int(os.getenv("PORT", 5000))
     debug = os.getenv("ENVIRONMENT", "development") == "development"
 
     logger.info(f"Starting Flask server on {host}:{port} (debug={debug})")
