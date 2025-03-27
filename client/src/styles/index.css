@@ -13,7 +13,6 @@
 /* Example global body styles */
 body {
   font-family: 'Poppins', sans-serif;
-<<<<<<< HEAD
   background-color: #d45113;
   color: #FFF;
   line-height: 1.6;
@@ -191,8 +190,4 @@ body {
 }
 .navbar a:hover {
   color: #b33c0f;
-=======
-  background-color: #fdfdfd;
-  color: #333;
->>>>>>> 1e68fdff80f69cd044f616194190fd9cc93bdcb3
 }
