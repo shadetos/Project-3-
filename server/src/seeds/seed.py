@@ -27,9 +27,11 @@ import argparse
 load_dotenv()
 
 # MongoDB connection
-MONGODB_URI = os.getenv("MONGODB_URI", "mongodb://localhost:27017/recipeApp")
+MONGODB_URI = os.getenv("MONGODB_URI")
+print(f"Connected to MongoDB: {MONGODB_URI}")
 client = MongoClient(MONGODB_URI)
-db = client.get_database()
+db = client.get_database("recipe_db")
+
 
 # Collections
 users_collection = db.users
