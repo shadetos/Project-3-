@@ -5,7 +5,9 @@
     "password": "Admin@123",
     "role": "admin",
     "savedRecipes": [],
-    "calorieLog": []
+    "calorieLog": [],
+    "created_at": "2025-03-01T00:00:00.000Z",
+    "updated_at": "2025-03-01T00:00:00.000Z"
   },
   {
     "username": "testuser",
@@ -19,6 +21,8 @@
         "caloriesConsumed": 2000,
         "caloriesBurned": 500
       }
-    ]
+    ],
+    "created_at": "2025-03-15T00:00:00.000Z",
+    "updated_at": "2025-03-15T00:00:00.000Z"
   }
 ]

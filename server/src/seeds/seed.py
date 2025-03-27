@@ -2,7 +2,7 @@
 Database seeding script for Recipe Generator App
 
 This script populates the MongoDB database with initial data:
-- Sample users with hashed passwords
+- Sample users with hashed passwords (loaded from userdata.json)
 - Sample recipes across different categories
 - User relationships (saved recipes, etc.)
 
@@ -35,33 +35,22 @@ db = client.get_database()
 users_collection = db.users
 recipes_collection = db.recipes
 
-# Sample user data
-USERS = [
-    {
-        "username": "admin",
-        "email": "admin@example.com",
-        "password": "AdminPass123!",
-        "role": "admin",
-    },
-    {
-        "username": "john_cook",
-        "email": "john@example.com",
-        "password": "JohnPass123!",
-        "role": "user",
-    },
-    {
-        "username": "sarah_baker",
-        "email": "sarah@example.com",
-        "password": "SarahPass123!",
-        "role": "user",
-    },
-    {
-        "username": "chef_mike",
-        "email": "mike@example.com",
-        "password": "MikePass123!",
-        "role": "user",
-    },
-]
+# Get the directory where the script is located
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Load user data from JSON file
+try:
+    with open(os.path.join(script_dir, "userdata.json"), "r") as f:
+        USERS = json.load(f)
+    print(f"Loaded {len(USERS)} users from userdata.json")
+except FileNotFoundError:
+    print(
+        "Warning: userdata.json not found. Make sure it's in the same directory as seed.py"
+    )
+    USERS = []
+except json.JSONDecodeError:
+    print("Error: userdata.json contains invalid JSON")
+    sys.exit(1)
 
 # Sample recipe data
 RECIPES = [
@@ -192,7 +181,7 @@ def clear_database():
 
 
 def seed_users():
-    """Seed users collection with sample data"""
+    """Seed users collection with sample data from userdata.json"""
     print("Seeding users...")
 
     # Skip if users already exist
@@ -200,19 +189,26 @@ def seed_users():
         print("Users collection already populated. Use --clear to reset.")
         return
 
+    if not USERS:
+        print("No user data found. Make sure userdata.json is properly formatted.")
+        return
+
     # Create users with hashed passwords
     for user_data in USERS:
-        # Hash password
-        user_data["password_hash"] = generate_password_hash(user_data.pop("password"))
+        # Make a copy of the user data to avoid modifying the original
+        user = user_data.copy()
 
-        # Add additional fields
-        user_data["savedRecipes"] = []
-        user_data["calorieLog"] = []
-        user_data["created_at"] = datetime.now()
-        user_data["updated_at"] = datetime.now()
+        # Hash password
+        user["password_hash"] = generate_password_hash(user.pop("password"))
+
+        # Add timestamps if not present
+        if "created_at" not in user:
+            user["created_at"] = datetime.now()
+        if "updated_at" not in user:
+            user["updated_at"] = datetime.now()
 
         # Insert user
-        users_collection.insert_one(user_data)
+        users_collection.insert_one(user)
 
     print(f"Added {len(USERS)} users to the database!")
 
@@ -249,7 +245,7 @@ def seed_recipes():
 
         # Randomly save recipe for some users
         if random.random() > 0.5:  # 50% chance
-            random_users = random.sample(users, random.randint(1, len(users)))
+            random_users = random.sample(users, random.randint(1, min(3, len(users))))
             for random_user in random_users:
                 users_collection.update_one(
                     {"_id": random_user["_id"]},
