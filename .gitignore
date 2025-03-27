@@ -1,2 +1,94 @@
-node_modules/
+# Environment variables and secrets
 .env
+.env.local
+.env.development
+.env.test
+.env.production
+*.env
+
+# Node.js
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# Build outputs
+dist/
+build/
+out/
+.next/
+.nuxt/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+venv/
+ENV/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDEs and editors
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+.nyc_output
+*.sublime-project
+*.sublime-workspace
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+xcuserdata/
+
+# MongoDB
+*.log
+data/db/
+
+# React/Vite
+.DS_Store
+logs
+*.log
+coverage
+*.local
+
+# Cypress
+cypress/videos/
+cypress/screenshots/
+
+# Django
+*.pot
+*.mo
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+
+# Miscellaneous
+.DS_Store
+Thumbs.db
+.temp
+.cache

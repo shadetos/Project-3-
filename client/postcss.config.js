@@ -1,9 +1,8 @@
-// Tells PostCSS which plugins to use, including Tailwind and autoprefixer.
-
+// client/postcss.config.js
 module.exports = {
     plugins: {
       tailwindcss: {},
       autoprefixer: {},
-    },
-  };
+    }
+  }
   
