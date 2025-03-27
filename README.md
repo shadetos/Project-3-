@@ -56,7 +56,7 @@ The Recipe Generator App is designed for anyone who wants quick inspiration for 
 
 ### Additional APIs
 
-- **Calorie Estimator** (e.g., Nutronixs or other): Estimate the calories of a recipe.
+- **Calorie Estimator** (e.g., Nutritionix or other): Estimate the calories of a recipe.
 - **Google Calendar**: Schedule meals directly on a user's calendar.
 - **Enhanced ChatGPT**: Generate more personalized recipes.
 
@@ -80,7 +80,7 @@ The Recipe Generator App is designed for anyone who wants quick inspiration for 
 ### Third-Party APIs:
 
 - **ChatGPT** (or comparable AI) for recipe generation.
-- **Nutronixs** (optional) for calorie estimation.
+- **Nutritionix** (optional) for calorie estimation.
 - **Google Calendar** (optional) for meal scheduling.
 
 ---
@@ -131,7 +131,7 @@ Below is a simple example of potential collections. Adjust field names as needed
   ]
 }
 
-###Reciepe Collection
+###Recipe Collection
 {
   "_id": "ObjectID",
   "name": "string",
