@@ -5,7 +5,7 @@
   "scripts": {
     "start": "cd server && python run.py",
     "start-dev": "cd server && python run.py",
-    "seed": "cd server && cd src && python seeds/seed.py",
+    "seed": "cd src && python seeds/seed.py",
     "seed-clear": "cd server && cd src && python seeds/seed.py --clear",
     "client": "cd client && npm run dev",
     "develop": "concurrently \"cd server && python run.py --web-only\" \"cd client && npm run dev\"",

@@ -2,10 +2,15 @@ from mongoengine import connect, disconnect
 import os
 import time
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
+
 
 def connect_db(retries=5):
     """Establish connection to MongoDB with retry mechanism."""
-    mongo_uri = os.getenv("MONGODB_URI", "mongodb://localhost:27017/recipeApp")
+    mongo_uri = os.getenv("MONGODB_URI")
 
     for attempt in range(retries):
         try:

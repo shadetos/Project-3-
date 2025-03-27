@@ -15,7 +15,7 @@ HOST = os.getenv("HOST", "0.0.0.0")
 PORT = int(os.getenv("PORT", "8000"))
 
 # MongoDB settings
-MONGODB_URI = os.getenv("MONGODB_URI", "mongodb://localhost:27017/recipe_app")
+MONGODB_URI = os.getenv("MONGODB_URI")
 DATABASE_NAME = os.getenv("DATABASE_NAME", "recipe_app")
 
 # Authentication settings
