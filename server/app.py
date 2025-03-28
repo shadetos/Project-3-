@@ -8,6 +8,7 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 import os
 import logging
+from flask_jwt_extended import (JWTManager, create_access_token, jwt_required, get_jwt_identity)
 
 # Load environment variables
 load_dotenv()
@@ -22,8 +23,8 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 
 # Configure app
-app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "default-secret-key")
-
+app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "your-secret-key")  
+jwt = JWTManager(app)
 # Enable CORS
 CORS(app)
 
@@ -163,40 +164,24 @@ def register_user():
 
 @app.route("/api/users/login", methods=["POST"])
 def login_user():
-    """Login a user"""
-    try:
-        # Get request data
-        data = request.json
+    data = request.json
+    username = data.get("username")
+    password = data.get("password")
 
-        # Validate required fields
-        required_fields = ["username", "password"]
-        for field in required_fields:
-            if field not in data:
-                return (
-                    jsonify(
-                        {
-                            "success": False,
-                            "message": f"Missing required field: {field}",
-                        }
-                    ),
-                    400,
-                )
+    # Mock user validation (Replace with database check)
+    if username == "testuser" and password == "password123":
+        access_token = create_access_token(identity=username)  
+        return jsonify({"success": True, "token": access_token}), 200
+    
+    return jsonify({"success": False, "message": "Invalid credentials"}), 401
 
-        # Mock successful login
-        return jsonify(
-            {
-                "success": True,
-                "message": "Login successful",
-                "token": "mock-jwt-token",
-                "user": {
-                    "id": "user123",
-                    "username": data["username"],
-                    "email": "user@example.com",
-                },
-            }
-        )
-    except Exception as e:
-        return jsonify({"success": False, "message": str(e)}), 500
+
+# 🔒 Protected Route (Requires JWT)
+@app.route("/api/protected", methods=["GET"])
+@jwt_required()
+def protected():
+    current_user = get_jwt_identity()
+    return jsonify({"success": True, "message": f"Hello {current_user}, this is a protected route!"})
 
 
 # Run the application
