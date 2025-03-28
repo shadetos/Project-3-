@@ -1,255 +1,166 @@
 """
-Authentication routes for the Flask application
-Handles user registration, login, and token management
+Authentication routes for the Recipe Generator API
 """
 
-from flask import Blueprint, request, jsonify, current_app
-from bson import ObjectId
-from werkzeug.security import generate_password_hash, check_password_hash
-import jwt
-from datetime import datetime, timedelta
-import os
+from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
+from typing import Annotated, Dict, Any
+from datetime import timedelta, datetime
+import logging
 
-# Initialize blueprint
-auth_bp = Blueprint("auth", __name__)
+# Set up logger
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Create router - CHANGED: removed the prefix since it will be added in main.py
+router = APIRouter(tags=["authentication"])
+
+# Temporary authentication for development
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login")
+
+# Temporary in-memory user store for testing
+test_users = {
+    "user@example.com": {
+        "_id": "temp-user-id",
+        "username": "testuser",
+        "email": "user@example.com",
+        "password": "password123",
+    }
+}
 
 
-# Mock database function (replace with actual MongoDB connection)
-def get_db_collection(collection_name):
-    """Get MongoDB collection - placeholder for actual implementation"""
-    return current_app.mongo.db[collection_name]
+# Helper functions until your real utils are working
+def create_access_token(data: Dict[str, Any], expires_delta: timedelta = None) -> str:
+    """Simple token generator for development"""
+    return "temp-access-token"
 
 
-@auth_bp.route("/register", methods=["POST"])
-def register():
-    """Register a new user"""
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    """Simple user lookup for development"""
+    # In a real app, you would decode the token
+    return {"_id": "temp-user-id", "username": "testuser", "email": "user@example.com"}
+
+
+@router.post("/api/auth/register")
+async def register_user(request: Request):
+    """
+    Register a new user and return access token
+    """
     try:
-        # Get request data
-        data = request.json
+        # Get JSON body
+        user_data = await request.json()
+        logger.info(f"Registration data received: {user_data}")
 
-        # Validate required fields
-        required_fields = ["username", "email", "password"]
-        for field in required_fields:
-            if field not in data:
-                return (
-                    jsonify(
-                        {
-                            "success": False,
-                            "message": f"Missing required field: {field}",
-                        }
-                    ),
-                    400,
-                )
+        # Extract user info
+        username = user_data.get("username")
+        email = user_data.get("email")
+        password = user_data.get("password")
 
-        # Get users collection
-        users_collection = get_db_collection("users")
+        # Simple validation
+        if not all([username, email, password]):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Missing required fields",
+            )
 
-        # Check if username or email already exists
-        existing_user = users_collection.find_one(
-            {"$or": [{"username": data["username"]}, {"email": data["email"]}]}
-        )
+        # Check if user exists (simple in-memory check)
+        if email in test_users:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="User with this email already exists",
+            )
 
-        if existing_user:
-            if existing_user.get("username") == data["username"]:
-                return (
-                    jsonify({"success": False, "message": "Username already exists"}),
-                    400,
-                )
-            else:
-                return (
-                    jsonify({"success": False, "message": "Email already exists"}),
-                    400,
-                )
-
-        # Hash password
-        hashed_password = generate_password_hash(data["password"])
-
-        # Create user document
-        user = {
-            "username": data["username"],
-            "email": data["email"],
-            "password_hash": hashed_password,
-            "role": "user",  # Default role
-            "savedRecipes": [],
-            "calorieLog": [],
-            "created_at": datetime.now(),
-            "updated_at": datetime.now(),
+        # Store user (in memory for now)
+        test_users[email] = {
+            "_id": f"user-{len(test_users) + 1}",
+            "username": username,
+            "email": email,
+            "password": password,  # In a real app, this would be hashed
         }
 
-        # Insert user
-        result = users_collection.insert_one(user)
-
-        # Generate JWT token
-        token = generate_token(str(result.inserted_id), user["username"], user["email"])
-
-        return (
-            jsonify(
-                {
-                    "success": True,
-                    "message": "User registered successfully",
-                    "token": token,
-                    "user": {
-                        "id": str(result.inserted_id),
-                        "username": user["username"],
-                        "email": user["email"],
-                        "role": user["role"],
-                    },
-                }
-            ),
-            201,
+        # Return response in the format expected by the frontend
+        return {
+            "id": test_users[email]["_id"],
+            "username": username,
+            "email": email,
+            "access_token": "temp-access-token",
+            "token_type": "bearer",
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Registration error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Registration failed. Please try again later.",
         )
 
-    except Exception as e:
-        return jsonify({"success": False, "message": str(e)}), 500
 
-
-@auth_bp.route("/login", methods=["POST"])
-def login():
-    """Login a user"""
+@router.post("/api/auth/login")
+async def login(request: Request):
+    """
+    Authenticate a user and return access token
+    """
     try:
-        # Get request data
-        data = request.json
+        # Get JSON body
+        login_data = await request.json()
+        logger.info(f"Login data received: {login_data}")
 
-        # Validate required fields
-        required_fields = ["username", "password"]
-        for field in required_fields:
-            if field not in data:
-                return (
-                    jsonify(
-                        {
-                            "success": False,
-                            "message": f"Missing required field: {field}",
-                        }
-                    ),
-                    400,
-                )
+        email = login_data.get("email")
+        password = login_data.get("password")
 
-        # Get users collection
-        users_collection = get_db_collection("users")
-
-        # Find user by username or email
-        user = users_collection.find_one(
-            {"$or": [{"username": data["username"]}, {"email": data["username"]}]}
-        )
-
-        if not user or not check_password_hash(user["password_hash"], data["password"]):
-            return (
-                jsonify({"success": False, "message": "Invalid username or password"}),
-                401,
+        # Simple validation
+        if not email or not password:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Email and password are required",
             )
 
-        # Generate JWT token
-        token = generate_token(str(user["_id"]), user["username"], user["email"])
+        # Check if user exists and password matches
+        # (Using simple in-memory check for development)
+        user = test_users.get(email)
+        if not user or user["password"] != password:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect email or password",
+            )
 
-        return jsonify(
-            {
-                "success": True,
-                "message": "Login successful",
-                "token": token,
-                "user": {
-                    "id": str(user["_id"]),
-                    "username": user["username"],
-                    "email": user["email"],
-                    "role": user.get("role", "user"),
-                },
-            }
-        )
-
+        # Return response in the format expected by the frontend
+        return {
+            "access_token": "temp-access-token",
+            "token_type": "bearer",
+            "user": {
+                "id": user["_id"],
+                "username": user["username"],
+                "email": user["email"],
+            },
+        }
+    except HTTPException:
+        raise
     except Exception as e:
-        return jsonify({"success": False, "message": str(e)}), 500
-
-
-@auth_bp.route("/refresh-token", methods=["POST"])
-def refresh_token():
-    """Refresh a JWT token"""
-    try:
-        # Get the token from the Authorization header
-        auth_header = request.headers.get("Authorization")
-
-        if not auth_header:
-            return (
-                jsonify(
-                    {"success": False, "message": "Authorization header is required"}
-                ),
-                401,
-            )
-
-        # Extract token
-        parts = auth_header.split()
-
-        if parts[0].lower() != "bearer":
-            return (
-                jsonify(
-                    {
-                        "success": False,
-                        "message": "Authorization header must start with Bearer",
-                    }
-                ),
-                401,
-            )
-
-        if len(parts) == 1:
-            return jsonify({"success": False, "message": "Token not found"}), 401
-
-        token = parts[1]
-
-        # Decode the token
-        try:
-            jwt_secret = current_app.config["JWT_SECRET_KEY"]
-            payload = jwt.decode(token, jwt_secret, algorithms=["HS256"])
-        except jwt.ExpiredSignatureError:
-            return jsonify({"success": False, "message": "Token has expired"}), 401
-        except jwt.InvalidTokenError:
-            return jsonify({"success": False, "message": "Invalid token"}), 401
-
-        # Get users collection
-        users_collection = get_db_collection("users")
-
-        # Find user
-        user = users_collection.find_one({"_id": ObjectId(payload["id"])})
-
-        if not user:
-            return jsonify({"success": False, "message": "User not found"}), 404
-
-        # Generate new token
-        new_token = generate_token(str(user["_id"]), user["username"], user["email"])
-
-        return jsonify(
-            {
-                "success": True,
-                "message": "Token refreshed successfully",
-                "token": new_token,
-            }
+        logger.error(f"Login error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Login failed. Please try again later.",
         )
 
-    except Exception as e:
-        return jsonify({"success": False, "message": str(e)}), 500
 
-
-@auth_bp.route("/logout", methods=["POST"])
-def logout():
-    """Logout a user (client-side logout)"""
-    # Since JWT is stateless, there's no server-side logout
-    # The client should simply delete the token
-    return jsonify({"success": True, "message": "Logout successful"})
-
-
-def generate_token(user_id, username, email):
-    """Generate a JWT token"""
-    jwt_secret = current_app.config["JWT_SECRET_KEY"]
-
-    if not jwt_secret:
-        jwt_secret = os.getenv("JWT_SECRET", "default-secret-key-for-development")
-
-    # Token payload
-    payload = {
-        "id": user_id,
-        "username": username,
-        "email": email,
-        "exp": datetime.utcnow() + timedelta(hours=24),  # Token expires in 24 hours
+@router.get("/api/auth/me")
+async def get_user_profile(current_user: Dict[str, Any] = Depends(get_current_user)):
+    """
+    Get current user profile
+    """
+    # Return user info for the authenticated user
+    return {
+        "id": current_user["_id"],
+        "username": current_user["username"],
+        "email": current_user["email"],
     }
 
-    # Generate token
-    token = jwt.encode(payload, jwt_secret, algorithm="HS256")
 
-    return token
+@router.get("/api/auth/health-check")
+async def health_check():
+    """
+    Health check endpoint for the auth service
+    """
+    return {"status": "ok", "message": "Auth service is running"}
