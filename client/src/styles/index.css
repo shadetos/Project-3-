@@ -1,3 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Import Poppins font */
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap");
+
 /* Global Styles */
 body {
   font-family: "Poppins", sans-serif;
@@ -18,6 +25,58 @@ body {
   --cinnamon: #774936;
   --cream: #fefae0;
   --olive: #606c38;
+}
+
+/* Apply color variables to text utilities */
+.text-tomato-red {
+  color: var(--tomato-red);
+}
+.text-paprika {
+  color: var(--paprika);
+}
+.text-mango {
+  color: var(--mango);
+}
+.text-honey {
+  color: var(--honey);
+}
+.text-carrot {
+  color: var(--carrot);
+}
+.text-cinnamon {
+  color: var(--cinnamon);
+}
+.text-cream {
+  color: var(--cream);
+}
+.text-olive {
+  color: var(--olive);
+}
+
+/* Apply color variables to background utilities */
+.bg-tomato-red {
+  background-color: var(--tomato-red);
+}
+.bg-paprika {
+  background-color: var(--paprika);
+}
+.bg-mango {
+  background-color: var(--mango);
+}
+.bg-honey {
+  background-color: var(--honey);
+}
+.bg-carrot {
+  background-color: var(--carrot);
+}
+.bg-cinnamon {
+  background-color: var(--cinnamon);
+}
+.bg-cream {
+  background-color: var(--cream);
+}
+.bg-olive {
+  background-color: var(--olive);
 }
 
 /* Smooth fade-in animation */
@@ -58,7 +117,7 @@ nav a {
   text-decoration: none;
   margin: 0 15px;
   font-weight: 600;
-  transition: color 0.3s ease-in-out;
+  transition: color 0.3s ease-in-out, transform 0.3s ease-in-out;
 }
 
 nav a:hover {
@@ -80,7 +139,8 @@ nav .logo::before {
 }
 
 /* Search Bar */
-input[type="text"] {
+input[type="text"],
+input[type="email"] {
   width: 100%;
   padding: 12px;
   border-radius: 8px;
@@ -90,7 +150,8 @@ input[type="text"] {
   background-color: var(--cream);
 }
 
-input[type="text"]:focus {
+input[type="text"]:focus,
+input[type="email"]:focus {
   outline: none;
   border-color: var(--carrot);
   box-shadow: 0 0 8px rgba(231, 111, 81, 0.5);
@@ -122,7 +183,6 @@ input[type="text"]:focus {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
   border-left: 4px solid var(--carrot);
-  margin-bottom: 20px;
   position: relative;
   overflow: hidden;
 }
@@ -155,6 +215,12 @@ input[type="text"]:focus {
   border-bottom: 2px dashed var(--honey);
   padding-bottom: 8px;
   font-weight: 700;
+}
+
+.recipe-card h4 {
+  color: var(--cinnamon);
+  margin-top: 0;
+  font-weight: 600;
 }
 
 .recipe-card .ingredients {
@@ -258,13 +324,14 @@ input[type="text"]:focus {
 /* Recipe Category Tags */
 .tag {
   display: inline-block;
-  padding: 4px 12px;
+  padding: 5px 15px;
   border-radius: 20px;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   margin-right: 8px;
   margin-bottom: 8px;
   font-weight: 500;
-  transition: transform 0.2s ease;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+  cursor: pointer;
 }
 
 .tag:hover {
@@ -295,10 +362,29 @@ input[type="text"]:focus {
 footer {
   margin-top: 40px;
   background: #ffffff;
-  padding: 20px;
+  padding: 40px 20px;
   text-align: center;
   border-top: 3px solid var(--honey);
   color: var(--cinnamon);
+}
+
+/* Loading Spinner */
+.spinner {
+  border: 4px solid rgba(231, 111, 81, 0.1);
+  border-radius: 50%;
+  border-top: 4px solid var(--carrot);
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Pulse animation for new recipes or promotions */
@@ -323,6 +409,55 @@ footer {
   font-size: 0.7rem;
   font-weight: 600;
   animation: pulse 2s infinite;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+}
+
+/* Combine Tailwind and custom styles */
+@layer components {
+  /* Add rounded corners to specific elements */
+  .rounded-custom {
+    @apply rounded-xl;
+  }
+
+  /* Kitchen icons styling */
+  .kitchen-icon {
+    @apply p-3 rounded-full bg-white/90 shadow-md text-carrot;
+  }
+
+  /* Hero content styling */
+  .hero-content {
+    @apply max-w-3xl mx-auto text-center relative z-10;
+  }
+
+  /* Custom card hover */
+  .hover-lift {
+    @apply transition-all duration-300 hover:-translate-y-2 hover:shadow-lg;
+  }
+
+  /* Badge styles */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .badge-orange {
+    @apply badge bg-carrot text-white;
+  }
+
+  .badge-yellow {
+    @apply badge bg-mango text-cinnamon;
+  }
+
+  .badge-red {
+    @apply badge bg-tomato-red text-white;
+  }
+
+  /* Custom input styles */
+  .input-recipe {
+    @apply px-4 py-3 border border-honey/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-honey/50 focus:border-transparent;
+  }
 }
 
 /* Media Queries for Responsiveness */
@@ -339,6 +474,10 @@ footer {
   nav a {
     margin: 5px 10px;
   }
+
+  .featured-recipe {
+    padding: 20px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -347,6 +486,104 @@ footer {
   }
 
   .featured-recipe {
-    padding: 20px;
+    padding: 15px;
   }
+
+  .search-wrapper::before {
+    display: none;
+  }
+
+  .tag {
+    padding: 4px 10px;
+    font-size: 0.8rem;
+  }
+}
+
+/* Custom animations */
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.float-animation {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Food icon decorations */
+.food-icon {
+  position: absolute;
+  opacity: 0.2;
+  z-index: 0;
+}
+
+.food-icon-1 {
+  top: 10%;
+  left: 5%;
+  animation: float 4s ease-in-out infinite;
+}
+
+.food-icon-2 {
+  bottom: 10%;
+  right: 5%;
+  animation: float 5s ease-in-out infinite;
+}
+
+.food-icon-3 {
+  top: 50%;
+  right: 10%;
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--cream);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--honey);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--carrot);
+}
+
+/* More shadows and depth effects */
+.shadow-recipe {
+  box-shadow: 0 10px 15px -3px rgba(231, 111, 81, 0.1),
+    0 4px 6px -2px rgba(231, 111, 81, 0.05);
+}
+
+.shadow-recipe-hover {
+  box-shadow: 0 20px 25px -5px rgba(231, 111, 81, 0.1),
+    0 10px 10px -5px rgba(231, 111, 81, 0.04);
+}
+/* Add these styles to your index.css */
+
+/* Fix for search bar text visibility */
+.search-wrapper input[type="text"] {
+  color: var(--cinnamon); /* Dark text color */
+  padding-left: 36px;
+}
+
+.search-wrapper input[type="text"]::placeholder {
+  color: var(--cinnamon);
+  opacity: 0.6; /* Make placeholder slightly transparent */
+}
+
+/* Ensure proper contrast on featured recipe search bar */
+.featured-recipe .search-wrapper input[type="text"] {
+  background-color: rgba(255, 255, 255, 0.9); /* More opaque background */
+  color: var(--cinnamon); /* Dark text */
 }
