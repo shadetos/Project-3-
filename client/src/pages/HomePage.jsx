@@ -8,7 +8,6 @@ import {
   FaHeart,
   FaClock,
   FaArrowRight,
-  FaCheckCircle,
 } from "react-icons/fa";
 import { GiCookingPot, GiFruitBowl, GiKnifeFork } from "react-icons/gi";
 import { BiDish } from "react-icons/bi";
@@ -30,10 +29,9 @@ const HomePage = () => {
   const [generatedRecipe, setGeneratedRecipe] = useState(null);
   const [showGeneratedRecipe, setShowGeneratedRecipe] = useState(false);
 
-  // Newsletter subscription states
+  // Newsletter states
   const [email, setEmail] = useState("");
   const [isSubscribed, setIsSubscribed] = useState(false);
-  const [isSubscribing, setIsSubscribing] = useState(false);
 
   // Fetch featured recipes on component mount
   useEffect(() => {
@@ -151,27 +149,11 @@ const HomePage = () => {
   };
 
   // Handle newsletter subscription
-  const handleSubscribe = (e) => {
-    e.preventDefault();
-
-    if (!email || !email.includes("@")) {
-      setError("Please enter a valid email address");
-      return;
-    }
-
-    setIsSubscribing(true);
-
-    // Simulate API call for subscription
-    setTimeout(() => {
-      setIsSubscribing(false);
+  const handleSubscribe = () => {
+    if (email && email.includes("@")) {
       setIsSubscribed(true);
       setEmail("");
-
-      // Reset subscription state after some time to allow resubscribing
-      setTimeout(() => {
-        setIsSubscribed(false);
-      }, 10000);
-    }, 1500);
+    }
   };
 
   return (
@@ -587,46 +569,31 @@ const HomePage = () => {
               Subscribe to our newsletter and never miss a delicious recipe
               again!
             </p>
-            {isSubscribed ? (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <input
+                type="email"
+                placeholder="Your email address"
+                className="px-4 py-3 rounded-md focus:outline-none text-cinnamon"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="button"
+                onClick={handleSubscribe}
+              >
+                Subscribe
+              </motion.button>
+            </div>
+            {isSubscribed && (
+              <motion.p
+                initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-                className="flex items-center justify-center gap-2 text-green-600 font-medium p-3 bg-green-50 rounded-lg"
+                className="mt-4 text-green-600 font-medium"
               >
-                <FaCheckCircle className="text-xl" />
-                <span>You are now subscribed!</span>
-              </motion.div>
-            ) : (
-              <form
-                onSubmit={handleSubscribe}
-                className="flex flex-col sm:flex-row gap-3 justify-center"
-              >
-                <input
-                  type="email"
-                  placeholder="Your email address"
-                  className="px-4 py-3 rounded-md focus:outline-none focus:ring-2 focus:ring-carrot text-cinnamon"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-                <motion.button
-                  type="submit"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className={`button ${isSubscribing ? "opacity-75" : ""}`}
-                  disabled={isSubscribing}
-                >
-                  {isSubscribing ? (
-                    <span className="flex items-center justify-center">
-                      <div className="spinner-sm spinner-white mr-2"></div>
-                      Subscribing...
-                    </span>
-                  ) : (
-                    "Subscribe"
-                  )}
-                </motion.button>
-              </form>
+                Success! You're now subscribed to our recipe newsletter.
+              </motion.p>
             )}
           </div>
         </div>

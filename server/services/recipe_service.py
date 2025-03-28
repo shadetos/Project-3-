@@ -6,7 +6,10 @@ import json
 import openai
 from typing import List, Dict, Any, Optional
 
-from config.settings import OPENAI_API_KEY, OPENAI_MODEL
+import os
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "your-default-api-key")
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")
 
 # Set up OpenAI API
 openai.api_key = OPENAI_API_KEY
