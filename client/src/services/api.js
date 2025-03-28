@@ -1,7 +1,7 @@
 // src/services/api.js
 
 // API Key - in production, this should be environment variable
-const SPOONACULAR_API_KEY = "cc277278ff084e62ad8eb05b0f2ca15d"; // Replace with your actual API key
+const SPOONACULAR_API_KEY = process.env.REACT_APP_SPOONACULAR_API_KEY; // Use environment variable for API key
 const SPOONACULAR_BASE_URL = "https://api.spoonacular.com";
 
 // Mock data for fallback
