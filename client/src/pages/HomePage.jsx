@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import {
   FaSearch,
   FaUtensils,
   FaBookmark,
   FaHeart,
   FaClock,
+  FaArrowRight,
 } from "react-icons/fa";
 import { GiCookingPot, GiFruitBowl, GiKnifeFork } from "react-icons/gi";
 import { BiDish } from "react-icons/bi";
 import RecipeCard from "../components/RecipeCard";
-import { fetchRecipes } from "../services/api";
+import { fetchRecipes, generateRecipe } from "../services/api";
 import LoadingSpinner from "../components/LoadingSpinner";
 
 const HomePage = () => {
@@ -19,6 +21,12 @@ const HomePage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [featuredRecipes, setFeaturedRecipes] = useState([]);
+
+  // AI Recipe Generator states
+  const [aiIngredients, setAiIngredients] = useState("");
+  const [generatingRecipe, setGeneratingRecipe] = useState(false);
+  const [generatedRecipe, setGeneratedRecipe] = useState(null);
+  const [showGeneratedRecipe, setShowGeneratedRecipe] = useState(false);
 
   // Fetch featured recipes on component mount
   useEffect(() => {
@@ -62,6 +70,34 @@ const HomePage = () => {
 
   const handleSearch = (e) => {
     setQuery(e.target.value);
+  };
+
+  // Handle AI recipe generation
+  const handleGenerateRecipe = async () => {
+    if (!aiIngredients.trim()) {
+      setError("Please enter ingredients first");
+      return;
+    }
+
+    try {
+      setGeneratingRecipe(true);
+      setError(null);
+
+      // Parse ingredients from comma-separated string to array
+      const ingredientsArray = aiIngredients
+        .split(",")
+        .map((item) => item.trim())
+        .filter((item) => item.length > 0);
+
+      const recipe = await generateRecipe(ingredientsArray);
+      setGeneratedRecipe(recipe);
+      setShowGeneratedRecipe(true);
+    } catch (err) {
+      console.error("Error generating AI recipe:", err);
+      setError("Failed to generate recipe. Please try again.");
+    } finally {
+      setGeneratingRecipe(false);
+    }
   };
 
   return (
@@ -109,7 +145,7 @@ const HomePage = () => {
               <input
                 type="text"
                 placeholder="Enter ingredients (e.g., chicken, tomatoes, basil...)"
-                className="pl-12 pr-4 py-4 w-full rounded-full"
+                className="pl-12 pr-4 py-4 w-full rounded-full text-cinnamon"
                 value={query}
                 onChange={handleSearch}
               />
@@ -117,6 +153,9 @@ const HomePage = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="button absolute right-2 top-1/2 transform -translate-y-1/2"
+                onClick={() =>
+                  query.length > 2 && handleSearch({ target: { value: query } })
+                }
               >
                 Search
               </motion.button>
@@ -320,7 +359,56 @@ const HomePage = () => {
           </motion.div>
         )}
 
-        {/* Quick Start Guide */}
+        {/* AI Recipe Generator Section */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.8, duration: 0.5 }}
+          className="featured-recipe mb-12 fade-in"
+        >
+          <div className="text-center mb-6">
+            <h3 className="text-2xl font-bold mb-4">
+              Ready to create your own recipe?
+            </h3>
+            <p className="mb-6 max-w-2xl mx-auto">
+              Let our AI-powered recipe generator create custom recipes based on
+              your ingredients!
+            </p>
+          </div>
+
+          <div className="max-w-xl mx-auto">
+            <div className="search-wrapper mb-4">
+              <input
+                type="text"
+                placeholder="Enter ingredients you have (e.g., chicken, rice, broccoli)..."
+                className="pl-12 pr-4 py-4 w-full rounded-full text-cinnamon"
+                value={aiIngredients}
+                onChange={(e) => setAiIngredients(e.target.value)}
+              />
+            </div>
+
+            <div className="flex justify-center">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="button secondary"
+                onClick={handleGenerateRecipe}
+                disabled={generatingRecipe}
+              >
+                {generatingRecipe ? (
+                  <>
+                    <div className="spinner-sm spinner-white mr-2"></div>
+                    Generating Recipe...
+                  </>
+                ) : (
+                  "Generate Recipe Now"
+                )}
+              </motion.button>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Recipe Inspiration Section */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -372,29 +460,6 @@ const HomePage = () => {
           </div>
         </motion.div>
 
-        {/* Call to Action */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.8, duration: 0.5 }}
-          className="featured-recipe text-center mb-12 fade-in"
-        >
-          <h3 className="text-2xl font-bold mb-4">
-            Ready to create your own recipe?
-          </h3>
-          <p className="mb-6 max-w-2xl mx-auto">
-            Let our AI-powered recipe generator create custom recipes based on
-            your ingredients and preferences!
-          </p>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="button secondary"
-          >
-            Generate Recipe Now
-          </motion.button>
-        </motion.div>
-
         {/* Food Categories */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -436,7 +501,7 @@ const HomePage = () => {
               <input
                 type="email"
                 placeholder="Your email address"
-                className="px-4 py-3 rounded-md focus:outline-none"
+                className="px-4 py-3 rounded-md focus:outline-none text-cinnamon"
               />
               <motion.button
                 whileHover={{ scale: 1.05 }}
@@ -449,6 +514,114 @@ const HomePage = () => {
           </div>
         </div>
       </footer>
+
+      {/* Generated Recipe Modal */}
+      {showGeneratedRecipe && generatedRecipe && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-xl p-6 max-w-2xl max-h-[90vh] overflow-y-auto"
+          >
+            <div className="flex justify-between items-start mb-4">
+              <h2 className="text-2xl font-bold text-paprika">
+                {generatedRecipe.name}
+              </h2>
+              <button
+                onClick={() => setShowGeneratedRecipe(false)}
+                className="p-1 rounded-full hover:bg-gray-100"
+              >
+                <svg
+                  className="w-6 h-6 text-gray-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            {generatedRecipe.image && (
+              <img
+                src={generatedRecipe.image}
+                alt={generatedRecipe.name}
+                className="w-full h-64 object-cover rounded-lg mb-4"
+              />
+            )}
+
+            <div className="mb-4">
+              {generatedRecipe.estimatedTime && (
+                <div className="inline-block bg-honey/20 text-honey px-3 py-1 rounded-full text-sm font-medium mr-2 mb-2">
+                  <FaClock className="inline mr-1" />{" "}
+                  {generatedRecipe.estimatedTime}
+                </div>
+              )}
+
+              {generatedRecipe.servings && (
+                <div className="inline-block bg-carrot/20 text-carrot px-3 py-1 rounded-full text-sm font-medium mr-2 mb-2">
+                  <FaUtensils className="inline mr-1" /> Serves{" "}
+                  {generatedRecipe.servings}
+                </div>
+              )}
+            </div>
+
+            <div className="mb-4">
+              <h3 className="font-semibold text-lg mb-2 text-cinnamon">
+                Ingredients:
+              </h3>
+              <ul className="list-disc pl-5 mb-4 space-y-1">
+                {generatedRecipe.ingredients.map((ingredient, index) => (
+                  <li key={index} className="text-cinnamon">
+                    {ingredient}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="mb-4">
+              <h3 className="font-semibold text-lg mb-2 text-cinnamon">
+                Instructions:
+              </h3>
+              <div
+                className="text-cinnamon"
+                dangerouslySetInnerHTML={{
+                  __html: generatedRecipe.instructions.replace(/\n/g, "<br>"),
+                }}
+              />
+            </div>
+
+            {generatedRecipe.estimatedCalories && (
+              <div className="mt-4 mb-4">
+                <div className="bg-cream rounded-lg p-3 inline-block">
+                  <span className="font-semibold">Estimated Calories:</span>{" "}
+                  {generatedRecipe.estimatedCalories}
+                </div>
+              </div>
+            )}
+
+            <div className="flex gap-4 mt-6">
+              <Link
+                to={`/recipe/${generatedRecipe._id}`}
+                className="button flex-1 text-center"
+              >
+                View Full Recipe
+              </Link>
+              <button
+                onClick={() => setShowGeneratedRecipe(false)}
+                className="button secondary flex-1"
+              >
+                Close
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </motion.div>
   );
 };
