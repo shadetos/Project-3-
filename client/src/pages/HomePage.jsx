@@ -21,6 +21,7 @@ const HomePage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [featuredRecipes, setFeaturedRecipes] = useState([]);
+  const [activeFilter, setActiveFilter] = useState("");
 
   // AI Recipe Generator states
   const [aiIngredients, setAiIngredients] = useState("");
@@ -52,6 +53,7 @@ const HomePage = () => {
       if (query.length > 2) {
         try {
           setLoading(true);
+          setActiveFilter(""); // Clear any active category filter
           const data = await fetchRecipes(query);
           setRecipes(data || []);
           setError(null);
@@ -77,6 +79,35 @@ const HomePage = () => {
     if (query.trim().length > 0) {
       // This will trigger the useEffect that performs the search
       setQuery(query.trim());
+    }
+  };
+
+  // Handle category filter button clicks
+  const handleFilterClick = async (category) => {
+    try {
+      setLoading(true);
+
+      // Toggle filter off if clicking the same category
+      if (activeFilter === category) {
+        setActiveFilter("");
+        // Show featured recipes when clearing filter
+        setRecipes([]);
+        return;
+      }
+
+      setActiveFilter(category);
+      setQuery(""); // Clear search query when filtering by category
+
+      // Fetch recipes filtered by the selected category
+      const data = await fetchRecipes(category);
+      setRecipes(data || []);
+      setError(null);
+    } catch (err) {
+      console.error(`Error fetching ${category} recipes:`, err);
+      setError(`Failed to load ${category} recipes. Please try again.`);
+      setRecipes([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -214,7 +245,12 @@ const HomePage = () => {
               key={category.name}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className={category.class}
+              className={`${category.class} ${
+                activeFilter === category.name
+                  ? "ring-2 ring-offset-2 ring-carrot"
+                  : ""
+              }`}
+              onClick={() => handleFilterClick(category.name)}
             >
               {category.name}
             </motion.button>
@@ -256,8 +292,8 @@ const HomePage = () => {
           </motion.div>
         )}
 
-        {/* Search Results */}
-        {query.length > 2 && recipes.length > 0 && (
+        {/* Search/Filter Results Section */}
+        {(query.length > 2 || activeFilter) && recipes.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -267,7 +303,7 @@ const HomePage = () => {
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-cinnamon flex items-center">
                 <FaSearch className="mr-2 text-paprika" />
-                Search Results
+                {activeFilter ? `${activeFilter} Recipes` : "Search Results"}
               </h2>
               <span className="text-cinnamon font-medium">
                 {recipes.length} recipes found
@@ -291,77 +327,38 @@ const HomePage = () => {
         )}
 
         {/* No Results Message */}
-        {query.length > 2 && recipes.length === 0 && !loading && !error && (
-          <div className="text-center py-12">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5 }}
-              className="bg-mango/10 border-l-4 border-mango p-6 rounded-lg shadow-md inline-block"
-            >
-              <BiDish className="text-5xl text-mango mx-auto mb-3" />
-              <p className="text-cinnamon font-medium">
-                No recipes found with those ingredients.
-              </p>
-              <p className="text-cinnamon/70 mt-2">
-                Try different ingredients or check our featured recipes!
-              </p>
-            </motion.div>
-          </div>
-        )}
-
-        {/* AI Recipe Generator Section */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.8, duration: 0.5 }}
-          className="featured-recipe mb-12 fade-in"
-        >
-          <div className="text-center mb-6">
-            <h3 className="text-2xl font-bold mb-4">
-              Ready to create your own recipe?
-            </h3>
-            <p className="mb-6 max-w-2xl mx-auto">
-              Let our AI-powered recipe generator create custom recipes based on
-              your ingredients!
-            </p>
-          </div>
-
-          <div className="max-w-xl mx-auto">
-            <div className="search-wrapper mb-4">
-              <input
-                type="text"
-                placeholder="Enter ingredients you have (e.g., chicken, rice, broccoli)..."
-                className="pl-12 pr-4 py-4 w-full rounded-full text-cinnamon"
-                value={aiIngredients}
-                onChange={(e) => setAiIngredients(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && handleGenerateRecipe()}
-              />
-            </div>
-
-            <div className="flex justify-center">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="button secondary"
-                onClick={handleGenerateRecipe}
-                disabled={generatingRecipe}
+        {(query.length > 2 || activeFilter) &&
+          recipes.length === 0 &&
+          !loading &&
+          !error && (
+            <div className="text-center py-12">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5 }}
+                className="bg-mango/10 border-l-4 border-mango p-6 rounded-lg shadow-md inline-block"
               >
-                {generatingRecipe ? (
-                  <>
-                    <div className="spinner-sm spinner-white mr-2"></div>
-                    Generating Recipe...
-                  </>
-                ) : (
-                  "Generate Recipe Now"
-                )}
-              </motion.button>
+                <BiDish className="text-5xl text-mango mx-auto mb-3" />
+                <p className="text-cinnamon font-medium">
+                  No recipes found
+                  {activeFilter
+                    ? ` for ${activeFilter}`
+                    : " with those ingredients"}
+                  .
+                </p>
+                <p className="text-cinnamon/70 mt-2">
+                  Try{" "}
+                  {activeFilter
+                    ? "a different category"
+                    : "different ingredients"}{" "}
+                  or check our featured recipes!
+                </p>
+              </motion.div>
             </div>
-          </div>
-        </motion.div>
+          )}
 
-        {/* Featured Recipes Section */}
-        {(!query || query.length <= 2) && (
+        {/* Featured Recipes Section - Show only when no search/filter is active */}
+        {!query && !activeFilter && recipes.length === 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -420,6 +417,56 @@ const HomePage = () => {
             )}
           </motion.div>
         )}
+
+        {/* AI Recipe Generator Section */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.8, duration: 0.5 }}
+          className="featured-recipe mb-12 fade-in"
+        >
+          <div className="text-center mb-6">
+            <h3 className="text-2xl font-bold mb-4">
+              Ready to create your own recipe?
+            </h3>
+            <p className="mb-6 max-w-2xl mx-auto">
+              Let our AI-powered recipe generator create custom recipes based on
+              your ingredients!
+            </p>
+          </div>
+
+          <div className="max-w-xl mx-auto">
+            <div className="search-wrapper mb-4">
+              <input
+                type="text"
+                placeholder="Enter ingredients you have (e.g., chicken, rice, broccoli)..."
+                className="pl-12 pr-4 py-4 w-full rounded-full text-cinnamon"
+                value={aiIngredients}
+                onChange={(e) => setAiIngredients(e.target.value)}
+                onKeyPress={(e) => e.key === "Enter" && handleGenerateRecipe()}
+              />
+            </div>
+
+            <div className="flex justify-center">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="button secondary"
+                onClick={handleGenerateRecipe}
+                disabled={generatingRecipe}
+              >
+                {generatingRecipe ? (
+                  <>
+                    <div className="spinner-sm spinner-white mr-2"></div>
+                    Generating Recipe...
+                  </>
+                ) : (
+                  "Generate Recipe Now"
+                )}
+              </motion.button>
+            </div>
+          </div>
+        </motion.div>
 
         {/* Recipe Inspiration Section */}
         <motion.div
