@@ -1,25 +1,33 @@
-# Environment variables and secrets
+# Dependencies
+node_modules/
+/.pnp
+.pnp.js
+
+# Testing
+/coverage
+
+# Production
+/build
+/dist
+
+# Misc
+.DS_Store
 .env
 .env.local
-.env.development
-.env.test
-.env.production
+.env.development.local
+.env.test.local
+.env.production.local
 *.env
 
-# Node.js
-node_modules/
-npm-debug.log
-yarn-debug.log
-yarn-error.log
-package-lock.json
-yarn.lock
+# Server environment files
+server/.env
+server/*.env
 
-# Build outputs
-dist/
-build/
-out/
-.next/
-.nuxt/
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
 
 # Python
 __pycache__/
@@ -27,9 +35,36 @@ __pycache__/
 *$py.class
 *.so
 .Python
+venv/
+ENV/
 env/
+.venv/
+env.bak/
+venv.bak/
+.env-*
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Local database
+*.sqlite3
+*.db
+
+# Cache directories
+.cache/
+.pytest_cache/
+
+# Documentation
+/site
+
+# Distribution / packaging
+.Python
 build/
 develop-eggs/
+dist/
 downloads/
 eggs/
 .eggs/
@@ -42,53 +77,3 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-venv/
-ENV/
-.pytest_cache/
-.coverage
-htmlcov/
-
-# IDEs and editors
-.idea/
-.vscode/
-*.swp
-*.swo
-.DS_Store
-.nyc_output
-*.sublime-project
-*.sublime-workspace
-.project
-.classpath
-.c9/
-*.launch
-.settings/
-xcuserdata/
-
-# MongoDB
-*.log
-data/db/
-
-# React/Vite
-.DS_Store
-logs
-*.log
-coverage
-*.local
-
-# Cypress
-cypress/videos/
-cypress/screenshots/
-
-# Django
-*.pot
-*.mo
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
-media/
-
-# Miscellaneous
-.DS_Store
-Thumbs.db
-.temp
-.cache

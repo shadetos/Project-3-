@@ -72,7 +72,15 @@ const HomePage = () => {
     setQuery(e.target.value);
   };
 
-  // Handle AI recipe generation using OpenAI
+  // Execute search when button is clicked or Enter is pressed
+  const executeSearch = () => {
+    if (query.trim().length > 0) {
+      // This will trigger the useEffect that performs the search
+      setQuery(query.trim());
+    }
+  };
+
+  // Handle AI recipe generation
   const handleGenerateRecipe = async () => {
     if (!aiIngredients.trim()) {
       setError("Please enter ingredients first");
@@ -89,8 +97,12 @@ const HomePage = () => {
         .map((item) => item.trim())
         .filter((item) => item.length > 0);
 
-      // Use OpenAI for recipe generation
+      console.log("Generating recipe with ingredients:", ingredientsArray);
+
+      // Use Spoonacular for now since we have issues with OpenAI
       const recipe = await generateRecipeWithAI(ingredientsArray);
+
+      console.log("Generated recipe:", recipe);
       setGeneratedRecipe(recipe);
       setShowGeneratedRecipe(true);
     } catch (err) {
@@ -149,14 +161,13 @@ const HomePage = () => {
                 className="pl-12 pr-4 py-4 w-full rounded-full text-cinnamon"
                 value={query}
                 onChange={handleSearch}
+                onKeyPress={(e) => e.key === "Enter" && executeSearch()}
               />
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="button absolute right-2 top-1/2 transform -translate-y-1/2"
-                onClick={() =>
-                  query.length > 2 && handleSearch({ target: { value: query } })
-                }
+                onClick={executeSearch}
               >
                 Search
               </motion.button>
@@ -324,6 +335,7 @@ const HomePage = () => {
                 className="pl-12 pr-4 py-4 w-full rounded-full text-cinnamon"
                 value={aiIngredients}
                 onChange={(e) => setAiIngredients(e.target.value)}
+                onKeyPress={(e) => e.key === "Enter" && handleGenerateRecipe()}
               />
             </div>
 
@@ -613,12 +625,14 @@ const HomePage = () => {
             )}
 
             <div className="flex gap-4 mt-6">
-              <Link
-                to={`/recipe/${generatedRecipe._id}`}
-                className="button flex-1 text-center"
-              >
-                View Full Recipe
-              </Link>
+              {generatedRecipe._id && (
+                <Link
+                  to={`/recipe/${generatedRecipe._id}`}
+                  className="button flex-1 text-center"
+                >
+                  View Full Recipe
+                </Link>
+              )}
               <button
                 onClick={() => setShowGeneratedRecipe(false)}
                 className="button secondary flex-1"

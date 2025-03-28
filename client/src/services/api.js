@@ -1,10 +1,8 @@
 // src/services/api.js
 
-// API Keys - in production, these should be environment variables
+// API Key - in production, this should be environment variable
 const SPOONACULAR_API_KEY = "cc277278ff084e62ad8eb05b0f2ca15d"; // Replace with your actual API key
 const SPOONACULAR_BASE_URL = "https://api.spoonacular.com";
-const OPENAI_API_KEY =
-  "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";
 
 // Mock data for fallback
 const mockRecipes = [
@@ -108,7 +106,18 @@ export const fetchRecipes = async (query) => {
       return fetchFeaturedRecipes();
     }
 
-    // Search for recipes by query
+    // Process query - could be a single term or multiple ingredients
+    let searchTerms = query
+      .split(",")
+      .map((term) => term.trim())
+      .filter((term) => term.length > 0);
+
+    // If we have multiple terms, use a different approach
+    if (searchTerms.length > 1) {
+      return fetchRecipesByIngredients(searchTerms);
+    }
+
+    // Regular search for a single term
     const url = `${SPOONACULAR_BASE_URL}/recipes/complexSearch?apiKey=${SPOONACULAR_API_KEY}&query=${encodeURIComponent(
       query
     )}&number=9&addRecipeInformation=true&fillIngredients=true`;
@@ -182,17 +191,28 @@ export const fetchRecipesByIngredients = async (ingredients) => {
       ? ingredients.join(",")
       : ingredients;
 
+    console.log(`Searching recipes with ingredients: ${ingredientsParam}`);
+
     const url = `${SPOONACULAR_BASE_URL}/recipes/findByIngredients?apiKey=${SPOONACULAR_API_KEY}&ingredients=${encodeURIComponent(
       ingredientsParam
     )}&number=9&ranking=1&ignorePantry=false`;
 
     const data = await callSpoonacularAPI(
       url,
-      mockRecipes.filter((r) =>
-        ingredients.some((ing) =>
-          r.ingredients.some((i) => i.toLowerCase().includes(ing.toLowerCase()))
-        )
-      )
+      mockRecipes.filter((r) => {
+        // For mock data, we want to match any of the ingredients
+        if (Array.isArray(ingredients)) {
+          return ingredients.some((ing) =>
+            r.ingredients.some((i) =>
+              i.toLowerCase().includes(ing.toLowerCase())
+            )
+          );
+        } else {
+          return r.ingredients.some((i) =>
+            i.toLowerCase().includes(ingredientsParam.toLowerCase())
+          );
+        }
+      })
     );
 
     // If using mock data, return it directly
@@ -249,11 +269,20 @@ export const fetchRecipesByIngredients = async (ingredients) => {
   } catch (error) {
     console.error("Error fetching recipes by ingredients:", error);
     // Return filtered mock recipes as fallback
-    return mockRecipes.filter((r) =>
-      ingredients.some((ing) =>
-        r.ingredients.some((i) => i.toLowerCase().includes(ing.toLowerCase()))
-      )
-    );
+    const filteredRecipes = mockRecipes.filter((r) => {
+      // For mock data, we want to match any of the ingredients
+      if (Array.isArray(ingredients)) {
+        return ingredients.some((ing) =>
+          r.ingredients.some((i) => i.toLowerCase().includes(ing.toLowerCase()))
+        );
+      } else {
+        const ingredientsArray = ingredients.split(",").map((i) => i.trim());
+        return ingredientsArray.some((ing) =>
+          r.ingredients.some((i) => i.toLowerCase().includes(ing.toLowerCase()))
+        );
+      }
+    });
+    return filteredRecipes;
   }
 };
 
@@ -299,6 +328,8 @@ export const generateRecipe = async (ingredients, preferences = null) => {
     const ingredientsParam = Array.isArray(ingredients)
       ? ingredients.join(",")
       : ingredients;
+
+    console.log(`Generating recipe with ingredients: ${ingredientsParam}`);
 
     // Build the API URL with parameters
     let url = `${SPOONACULAR_BASE_URL}/recipes/findByIngredients?apiKey=${SPOONACULAR_API_KEY}&ingredients=${encodeURIComponent(
@@ -438,102 +469,48 @@ export const generateRecipe = async (ingredients, preferences = null) => {
   }
 };
 
-// Generate a recipe using OpenAI's API
+// For now, just use generateRecipe until we get the server OpenAI integration working
 export const generateRecipeWithAI = async (ingredients, preferences = null) => {
+  console.log("Using Spoonacular for recipe generation instead of OpenAI");
+  return generateRecipe(ingredients, preferences);
+
+  // The code below would be used once you have the server endpoint for OpenAI working
+  /*
   try {
-    // Format ingredients for prompt
-    const ingredientsList = Array.isArray(ingredients)
-      ? ingredients.join(", ")
-      : ingredients;
-
-    // Build prompt
-    let prompt = `Generate a recipe using these ingredients: ${ingredientsList}`;
-
-    if (preferences) {
-      prompt += `\nDietary preferences/requirements: ${preferences}`;
-    }
-
-    prompt +=
-      '\nFormat the response as a JSON object with the following structure: {"name": "Recipe Name", "ingredients": ["ingredient 1 with quantity", "ingredient 2 with quantity", ...], "instructions": "Step-by-step instructions", "estimatedCalories": approximate_calories_as_number, "estimatedTime": "cooking time in minutes", "servings": number_of_servings}';
-
-    // Make request to OpenAI API
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    // Format ingredients if needed
+    const ingredientsData = Array.isArray(ingredients) ? ingredients : ingredients.split(',').map(i => i.trim());
+    
+    console.log("Sending ingredients to server:", ingredientsData);
+    
+    // Call our server endpoint instead of OpenAI directly
+    const response = await fetch("/api/recipes/generate-ai", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
+        "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "gpt-3.5-turbo",
-        messages: [
-          {
-            role: "system",
-            content:
-              "You are a professional chef providing detailed, accurate recipes.",
-          },
-          {
-            role: "user",
-            content: prompt,
-          },
-        ],
-        temperature: 0.7,
-        max_tokens: 1000,
-      }),
+        ingredients: ingredientsData,
+        preferences: preferences
+      })
     });
-
-    const data = await response.json();
-
+    
     if (!response.ok) {
-      console.error("OpenAI API error:", data);
-      throw new Error(
-        `OpenAI API error: ${data.error?.message || "Unknown error"}`
-      );
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Failed to generate recipe");
     }
-
-    // Extract and parse the recipe JSON
-    const recipeText = data.choices[0].message.content.trim();
-
-    // Extract JSON part (in case there's extra text)
-    let recipeData;
-    try {
-      // Try to parse the entire response
-      recipeData = JSON.parse(recipeText);
-    } catch (err) {
-      // If that fails, try to extract the JSON part
-      const jsonStart = recipeText.indexOf("{");
-      const jsonEnd = recipeText.lastIndexOf("}") + 1;
-
-      if (jsonStart >= 0 && jsonEnd > jsonStart) {
-        const jsonPart = recipeText.substring(jsonStart, jsonEnd);
-        recipeData = JSON.parse(jsonPart);
-      } else {
-        throw new Error("Failed to parse recipe data from OpenAI response");
-      }
-    }
-
-    // Format the recipe for our app
-    return {
-      _id: `ai-${Date.now()}`, // Generate a temporary ID
-      name: recipeData.name,
-      ingredients: recipeData.ingredients,
-      instructions: recipeData.instructions,
-      estimatedCalories: recipeData.estimatedCalories || 0,
-      estimatedTime: recipeData.estimatedTime
-        ? `${recipeData.estimatedTime} mins`
-        : "30 mins",
-      servings: recipeData.servings || 4,
-      image: `https://source.unsplash.com/random/800x600/?${encodeURIComponent(
-        recipeData.name
-      )}`, // Get a relevant image
-      ai_generated: true,
-      diets: preferences ? [preferences] : [],
-    };
+    
+    const data = await response.json();
+    
+    // Return the recipe from our server
+    return data.data || data.recipe;
+    
   } catch (error) {
     console.error("Error generating recipe with AI:", error);
-
+    
     // Fall back to the regular Spoonacular recipe generation
     return generateRecipe(ingredients, preferences);
   }
+  */
 };
 
 // Save a recipe to user favorites (mock implementation)
