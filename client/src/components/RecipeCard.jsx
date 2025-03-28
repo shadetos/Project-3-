@@ -3,6 +3,9 @@ import { Link } from "react-router-dom";
 import { FaClock, FaUtensils, FaBookmark } from "react-icons/fa";
 
 const RecipeCard = ({ recipe }) => {
+  // Ensure recipe has _id property
+  const recipeId = recipe._id || recipe.id;
+
   return (
     <div className="h-full flex flex-col">
       {/* Recipe Image */}
@@ -46,12 +49,14 @@ const RecipeCard = ({ recipe }) => {
       </div>
 
       {/* Action Button */}
-      <Link
-        to={`/recipe/${recipe._id}`}
-        className="button w-full text-center mt-auto"
-      >
-        View Recipe
-      </Link>
+      {recipeId && (
+        <Link
+          to={`/recipe/${recipeId}`}
+          className="button w-full text-center mt-auto"
+        >
+          View Recipe
+        </Link>
+      )}
     </div>
   );
 };

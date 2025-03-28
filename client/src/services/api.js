@@ -1,8 +1,10 @@
 // src/services/api.js
 
-// Your Spoonacular API key
+// API Keys - in production, these should be environment variables
 const SPOONACULAR_API_KEY = "cc277278ff084e62ad8eb05b0f2ca15d"; // Replace with your actual API key
 const SPOONACULAR_BASE_URL = "https://api.spoonacular.com";
+const OPENAI_API_KEY =
+  "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";
 
 // Mock data for fallback
 const mockRecipes = [
@@ -312,14 +314,34 @@ export const generateRecipe = async (ingredients, preferences = null) => {
       )}&number=1&addRecipeInformation=true&fillIngredients=true`;
     }
 
-    // Create filter function for mock data
+    // Create filter function for mock data that works with multiple ingredients
     const mockFilter = () => {
-      const filteredRecipes = mockRecipes.filter((r) =>
-        ingredients.some((ing) =>
-          r.ingredients.some((i) => i.toLowerCase().includes(ing.toLowerCase()))
-        )
-      );
-      return filteredRecipes.length > 0 ? filteredRecipes[0] : mockRecipes[0];
+      // First convert ingredients to array if it's a string
+      const ingredientsArray =
+        typeof ingredientsParam === "string"
+          ? ingredientsParam.split(",").map((i) => i.trim())
+          : Array.isArray(ingredients)
+          ? ingredients
+          : [ingredients];
+
+      // Score recipes by how many matching ingredients they have
+      const scoredRecipes = mockRecipes.map((recipe) => {
+        let score = 0;
+        ingredientsArray.forEach((ingredient) => {
+          if (
+            recipe.ingredients.some((i) =>
+              i.toLowerCase().includes(ingredient.toLowerCase())
+            )
+          ) {
+            score++;
+          }
+        });
+        return { recipe, score };
+      });
+
+      // Sort by score (highest first) and return best match
+      scoredRecipes.sort((a, b) => b.score - a.score);
+      return scoredRecipes[0]?.recipe || mockRecipes[0];
     };
 
     // Search for recipes that match the ingredients
@@ -374,19 +396,143 @@ export const generateRecipe = async (ingredients, preferences = null) => {
     console.error("Error generating recipe:", error);
 
     // Return a mock recipe as fallback
-    const mockRecipe =
-      mockRecipes.find((r) =>
-        ingredients.some((ing) =>
-          r.ingredients.some((i) => i.toLowerCase().includes(ing.toLowerCase()))
-        )
-      ) || mockRecipes[0];
+    const mockFilter = () => {
+      // First convert ingredients to array if it's a string
+      const ingredientsArray =
+        typeof ingredientsParam === "string"
+          ? ingredientsParam.split(",").map((i) => i.trim())
+          : Array.isArray(ingredients)
+          ? ingredients
+          : [ingredients];
+
+      // Score recipes by how many matching ingredients they have
+      const scoredRecipes = mockRecipes.map((recipe) => {
+        let score = 0;
+        ingredientsArray.forEach((ingredient) => {
+          if (
+            recipe.ingredients.some((i) =>
+              i.toLowerCase().includes(ingredient.toLowerCase())
+            )
+          ) {
+            score++;
+          }
+        });
+        return { recipe, score };
+      });
+
+      // Sort by score (highest first) and return best match
+      scoredRecipes.sort((a, b) => b.score - a.score);
+      return scoredRecipes[0]?.recipe || mockRecipes[0];
+    };
+
+    const mockRecipe = mockFilter();
 
     return {
       ...mockRecipe,
       estimatedCalories: 500,
       diets: ["mockDiet"],
-      summary: `A delicious recipe featuring ${ingredients.join(", ")}.`,
+      summary: `A delicious recipe featuring ${
+        Array.isArray(ingredients) ? ingredients.join(", ") : ingredients
+      }.`,
     };
+  }
+};
+
+// Generate a recipe using OpenAI's API
+export const generateRecipeWithAI = async (ingredients, preferences = null) => {
+  try {
+    // Format ingredients for prompt
+    const ingredientsList = Array.isArray(ingredients)
+      ? ingredients.join(", ")
+      : ingredients;
+
+    // Build prompt
+    let prompt = `Generate a recipe using these ingredients: ${ingredientsList}`;
+
+    if (preferences) {
+      prompt += `\nDietary preferences/requirements: ${preferences}`;
+    }
+
+    prompt +=
+      '\nFormat the response as a JSON object with the following structure: {"name": "Recipe Name", "ingredients": ["ingredient 1 with quantity", "ingredient 2 with quantity", ...], "instructions": "Step-by-step instructions", "estimatedCalories": approximate_calories_as_number, "estimatedTime": "cooking time in minutes", "servings": number_of_servings}';
+
+    // Make request to OpenAI API
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-3.5-turbo",
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are a professional chef providing detailed, accurate recipes.",
+          },
+          {
+            role: "user",
+            content: prompt,
+          },
+        ],
+        temperature: 0.7,
+        max_tokens: 1000,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error("OpenAI API error:", data);
+      throw new Error(
+        `OpenAI API error: ${data.error?.message || "Unknown error"}`
+      );
+    }
+
+    // Extract and parse the recipe JSON
+    const recipeText = data.choices[0].message.content.trim();
+
+    // Extract JSON part (in case there's extra text)
+    let recipeData;
+    try {
+      // Try to parse the entire response
+      recipeData = JSON.parse(recipeText);
+    } catch (err) {
+      // If that fails, try to extract the JSON part
+      const jsonStart = recipeText.indexOf("{");
+      const jsonEnd = recipeText.lastIndexOf("}") + 1;
+
+      if (jsonStart >= 0 && jsonEnd > jsonStart) {
+        const jsonPart = recipeText.substring(jsonStart, jsonEnd);
+        recipeData = JSON.parse(jsonPart);
+      } else {
+        throw new Error("Failed to parse recipe data from OpenAI response");
+      }
+    }
+
+    // Format the recipe for our app
+    return {
+      _id: `ai-${Date.now()}`, // Generate a temporary ID
+      name: recipeData.name,
+      ingredients: recipeData.ingredients,
+      instructions: recipeData.instructions,
+      estimatedCalories: recipeData.estimatedCalories || 0,
+      estimatedTime: recipeData.estimatedTime
+        ? `${recipeData.estimatedTime} mins`
+        : "30 mins",
+      servings: recipeData.servings || 4,
+      image: `https://source.unsplash.com/random/800x600/?${encodeURIComponent(
+        recipeData.name
+      )}`, // Get a relevant image
+      ai_generated: true,
+      diets: preferences ? [preferences] : [],
+    };
+  } catch (error) {
+    console.error("Error generating recipe with AI:", error);
+
+    // Fall back to the regular Spoonacular recipe generation
+    return generateRecipe(ingredients, preferences);
   }
 };
 

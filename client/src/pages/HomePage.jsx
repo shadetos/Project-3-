@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
   FaSearch,
   FaUtensils,
@@ -12,7 +12,7 @@ import {
 import { GiCookingPot, GiFruitBowl, GiKnifeFork } from "react-icons/gi";
 import { BiDish } from "react-icons/bi";
 import RecipeCard from "../components/RecipeCard";
-import { fetchRecipes, generateRecipe } from "../services/api";
+import { fetchRecipes, generateRecipeWithAI } from "../services/api";
 import LoadingSpinner from "../components/LoadingSpinner";
 
 const HomePage = () => {
@@ -72,7 +72,7 @@ const HomePage = () => {
     setQuery(e.target.value);
   };
 
-  // Handle AI recipe generation
+  // Handle AI recipe generation using OpenAI
   const handleGenerateRecipe = async () => {
     if (!aiIngredients.trim()) {
       setError("Please enter ingredients first");
@@ -89,7 +89,8 @@ const HomePage = () => {
         .map((item) => item.trim())
         .filter((item) => item.length > 0);
 
-      const recipe = await generateRecipe(ingredientsArray);
+      // Use OpenAI for recipe generation
+      const recipe = await generateRecipeWithAI(ingredientsArray);
       setGeneratedRecipe(recipe);
       setShowGeneratedRecipe(true);
     } catch (err) {
@@ -298,6 +299,55 @@ const HomePage = () => {
           </div>
         )}
 
+        {/* AI Recipe Generator Section */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.8, duration: 0.5 }}
+          className="featured-recipe mb-12 fade-in"
+        >
+          <div className="text-center mb-6">
+            <h3 className="text-2xl font-bold mb-4">
+              Ready to create your own recipe?
+            </h3>
+            <p className="mb-6 max-w-2xl mx-auto">
+              Let our AI-powered recipe generator create custom recipes based on
+              your ingredients!
+            </p>
+          </div>
+
+          <div className="max-w-xl mx-auto">
+            <div className="search-wrapper mb-4">
+              <input
+                type="text"
+                placeholder="Enter ingredients you have (e.g., chicken, rice, broccoli)..."
+                className="pl-12 pr-4 py-4 w-full rounded-full text-cinnamon"
+                value={aiIngredients}
+                onChange={(e) => setAiIngredients(e.target.value)}
+              />
+            </div>
+
+            <div className="flex justify-center">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="button secondary"
+                onClick={handleGenerateRecipe}
+                disabled={generatingRecipe}
+              >
+                {generatingRecipe ? (
+                  <>
+                    <div className="spinner-sm spinner-white mr-2"></div>
+                    Generating Recipe...
+                  </>
+                ) : (
+                  "Generate Recipe Now"
+                )}
+              </motion.button>
+            </div>
+          </div>
+        </motion.div>
+
         {/* Featured Recipes Section */}
         {(!query || query.length <= 2) && (
           <motion.div
@@ -358,55 +408,6 @@ const HomePage = () => {
             )}
           </motion.div>
         )}
-
-        {/* AI Recipe Generator Section */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.8, duration: 0.5 }}
-          className="featured-recipe mb-12 fade-in"
-        >
-          <div className="text-center mb-6">
-            <h3 className="text-2xl font-bold mb-4">
-              Ready to create your own recipe?
-            </h3>
-            <p className="mb-6 max-w-2xl mx-auto">
-              Let our AI-powered recipe generator create custom recipes based on
-              your ingredients!
-            </p>
-          </div>
-
-          <div className="max-w-xl mx-auto">
-            <div className="search-wrapper mb-4">
-              <input
-                type="text"
-                placeholder="Enter ingredients you have (e.g., chicken, rice, broccoli)..."
-                className="pl-12 pr-4 py-4 w-full rounded-full text-cinnamon"
-                value={aiIngredients}
-                onChange={(e) => setAiIngredients(e.target.value)}
-              />
-            </div>
-
-            <div className="flex justify-center">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="button secondary"
-                onClick={handleGenerateRecipe}
-                disabled={generatingRecipe}
-              >
-                {generatingRecipe ? (
-                  <>
-                    <div className="spinner-sm spinner-white mr-2"></div>
-                    Generating Recipe...
-                  </>
-                ) : (
-                  "Generate Recipe Now"
-                )}
-              </motion.button>
-            </div>
-          </div>
-        </motion.div>
 
         {/* Recipe Inspiration Section */}
         <motion.div
@@ -567,6 +568,12 @@ const HomePage = () => {
                 <div className="inline-block bg-carrot/20 text-carrot px-3 py-1 rounded-full text-sm font-medium mr-2 mb-2">
                   <FaUtensils className="inline mr-1" /> Serves{" "}
                   {generatedRecipe.servings}
+                </div>
+              )}
+
+              {generatedRecipe.ai_generated && (
+                <div className="inline-block bg-paprika/20 text-paprika px-3 py-1 rounded-full text-sm font-medium mr-2 mb-2">
+                  AI Generated
                 </div>
               )}
             </div>

@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import RecipeForm from "./pages/RecipeForm";
 import SavedRecipes from "./pages/SavedRecipes";
+import RecipeDetailPage from "./pages/RecipeDetailPage";
 import NavBar from "./components/NavBar";
 import { RecipeProvider } from "./context/RecipeContext";
 import "./styles/index.css";
@@ -18,6 +19,8 @@ const App = () => {
               <Route path="/" element={<HomePage />} />
               <Route path="/create" element={<RecipeForm />} />
               <Route path="/saved" element={<SavedRecipes />} />
+              <Route path="/recipe/:id" element={<RecipeDetailPage />} />{" "}
+              {/* Add this route */}
             </Routes>
           </main>
           <footer className="bg-white border-t border-gray-200 py-4">
